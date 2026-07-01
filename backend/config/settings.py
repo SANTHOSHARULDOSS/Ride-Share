@@ -91,10 +91,17 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # --------------------------------------------------
 # Database
 # --------------------------------------------------
+import os
+
+if os.path.exists('/data'):
+    db_path = '/data/db.sqlite3'
+else:
+    db_path = BASE_DIR / 'db.sqlite3'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': db_path,
     }
 }
 

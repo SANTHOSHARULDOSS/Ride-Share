@@ -2,6 +2,8 @@
 
 Ride Share is a Progressive Web Application (PWA) MVP built using Django 6, SQLite, Bootstrap 5, and Leaflet.js. Designed as an academic showcase prototype, it demonstrates software engineering principles, clean architecture, geodetic route waypoint matching, simulated payment flows, and offline-first capabilities.
 
+[![Deploy to Render](https://render.com/images/deploy-to-render.svg)](https://render.com/deploy?repo=https://github.com/SANTHOSHARULDOSS/Ride-Share)
+
 ---
 
 ## Key Features
