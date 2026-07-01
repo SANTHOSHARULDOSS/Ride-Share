@@ -246,3 +246,56 @@ a:hover {
 .pulse-glow-effect {
     animation: pulse-glow 2s infinite ease-in-out;
 }
+
+/* ==========================================================================
+   Universal Dynamic Theme Adapters (Dark/Light Compatibility Fixes)
+   ========================================================================== */
+
+/* 1. Override bootstrap hardcoded text-white to dynamically adjust */
+.text-white, .navbar-brand, .nav-link {
+    color: var(--text-primary) !important;
+}
+
+/* 2. Override bootstrap hardcoded bg-dark to follow theme tertiary */
+.bg-dark {
+    background-color: var(--bg-tertiary) !important;
+}
+
+/* 3. Themed Form Fields */
+.form-control, .form-select, .input-group-text {
+    background-color: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color) !important;
+}
+.form-control::placeholder {
+    color: var(--text-muted) !important;
+    opacity: 0.8;
+}
+.form-control:focus, .form-select:focus {
+    background-color: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--accent-primary) !important;
+    box-shadow: 0 0 0 0.25rem var(--accent-glow) !important;
+}
+
+/* 4. Themed Tables */
+.table-dark {
+    --bs-table-color: var(--text-primary) !important;
+    --bs-table-bg: var(--bg-secondary) !important;
+    --bs-table-border-color: var(--border-color) !important;
+    --bs-table-striped-bg: var(--bg-tertiary) !important;
+    --bs-table-hover-bg: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+}
+
+/* 5. Specific text modifications */
+.text-indigo {
+    color: var(--accent-primary) !important;
+}
+.navbar-glass .navbar-brand span {
+    color: var(--accent-secondary) !important;
+}
+.quick-login-item:hover .text-white {
+    color: var(--accent-primary) !important;
+}
+
