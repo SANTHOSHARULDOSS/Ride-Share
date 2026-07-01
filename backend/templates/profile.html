@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - Ride Share{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <h1 class="h2 text-white mb-4"><i class="fa-solid fa-id-card-clip text-indigo me-2"></i>My Profile Settings</h1>
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row g-4">
+                    <!-- User Details Profile Card -->
+                    <div class="col-md-6">
+                        <div class="custom-card h-100">
+                            <h3 class="h5 text-white mb-4"><i class="fa-solid fa-user-gear text-indigo me-2"></i>Personal Information</h3>
+                            
+                            <!-- Profile Picture Preview -->
+                            <div class="d-flex align-items-center gap-3 mb-4">
+                                <div class="bg-indigo rounded-circle d-flex align-items-center justify-content-center text-white font-monospace" style="width: 80px; height: 80px; font-size: 2rem; background-color: var(--accent-primary); overflow: hidden;">
+                                    {% if user.profile_picture %}
+                                        <img src="{{ user.profile_picture.url }}" alt="Profile" style="width:100%; height:100%; object-fit:cover;">
+                                    {% else %}
+                                        {{ user.username|slice:":1"|upper }}
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <h4 class="h6 text-white mb-1">{{ user.username }}</h4>
+                                    <span class="badge bg-secondary text-uppercase">{{ user.get_role_display }}</span>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label text-secondary small fw-bold">FIRST NAME</label>
+                                {{ profile_form.first_name }}
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label text-secondary small fw-bold">LAST NAME</label>
+                                {{ profile_form.last_name }}
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label text-secondary small fw-bold">EMAIL ADDRESS</label>
+                                {{ profile_form.email }}
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label text-secondary small fw-bold">CONTACT NUMBER</label>
+                                {{ profile_form.phone_number }}
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label text-secondary small fw-bold">PROFILE PICTURE</label>
+                                {{ profile_form.profile_picture }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Driver Vehicle Card -->
+                    <div class="col-md-6">
+                        {% if user.role == 'DRIVER' %}
+                            <div class="custom-card h-100 d-flex flex-column">
+                                <h3 class="h5 text-white mb-4"><i class="fa-solid fa-car-side text-indigo me-2"></i>Vehicle Configuration</h3>
+                                
+                                {% if vehicle %}
+                                    <div class="alert alert-success border-0 bg-success bg-opacity-10 text-success rounded-4 mb-4 small py-2.5 px-3">
+                                        <i class="fa-solid fa-check-circle me-1"></i> Active Vehicle Registered
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-warning border-0 bg-warning bg-opacity-10 text-warning rounded-4 mb-4 small py-2.5 px-3">
+                                        <i class="fa-solid fa-triangle-exclamation me-1"></i> Please add vehicle details to accept rides.
+                                    </div>
+                                {% endif %}
+
+                                <div class="mb-3">
+                                    <label class="form-label text-secondary small fw-bold">VEHICLE MAKE</label>
+                                    {{ vehicle_form.make }}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label text-secondary small fw-bold">VEHICLE MODEL</label>
+                                    {{ vehicle_form.model }}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label text-secondary small fw-bold">LICENSE PLATE</label>
+                                    {{ vehicle_form.license_plate }}
+                                </div>
+
+                                <div class="row g-2 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label text-secondary small fw-bold">SEATING CAPACITY</label>
+                                        {{ vehicle_form.capacity }}
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label text-secondary small fw-bold">VEHICLE COLOR</label>
+                                        {{ vehicle_form.color }}
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="custom-card h-100 d-flex flex-column align-items-center justify-content-center text-center p-4">
+                                <i class="fa-solid fa-route text-muted mb-4" style="font-size: 5rem;"></i>
+                                <h4 class="text-white h5 mb-2">Passenger Account</h4>
+                                <p class="text-secondary small px-3">You are logged in as a passenger. You do not need to register a vehicle. You can directly search and request matches from active driver lists.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="text-end mt-4">
+                    <button type="submit" class="btn btn-premium btn-lg rounded-pill px-5 shadow">Save Profile Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

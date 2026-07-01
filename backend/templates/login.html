@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Ride Share{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="custom-card shadow-lg p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <i class="fa-solid fa-user-lock text-indigo fs-1 mb-2" style="color: #6366f1;"></i>
+                    <h2 class="fw-bold text-white">Sign In</h2>
+                    <p class="text-secondary small">Access your Ride Share Dashboard</p>
+                </div>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="username" class="form-label text-secondary small fw-bold">USERNAME</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary border-opacity-20 text-secondary"><i class="fa-solid fa-user"></i></span>
+                            <input type="text" name="username" id="username" class="form-control bg-dark border-secondary border-opacity-20 text-white" placeholder="Enter username" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="password" class="form-label text-secondary small fw-bold">PASSWORD</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary border-opacity-20 text-secondary"><i class="fa-solid fa-lock"></i></span>
+                            <input type="password" name="password" id="password" class="form-control bg-dark border-secondary border-opacity-20 text-white" placeholder="Enter password" required>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid mb-4">
+                        <button type="submit" class="btn btn-premium btn-lg rounded-pill">Sign In</button>
+                    </div>
+                </form>
+
+                <div class="text-center border-top pt-4" style="border-color: var(--border-color) !important;">
+                    <h5 class="text-white h6 mb-3">Quick Demo Logins</h5>
+                    <div class="quick-login-grid">
+                        <a href="?demo_role=ADMIN" class="quick-login-item text-decoration-none">
+                            <i class="fa-solid fa-user-tie text-warning mb-2 fs-4"></i>
+                            <div class="text-white fw-bold small">Admin</div>
+                            <div class="text-muted" style="font-size: 10px;">admin</div>
+                        </a>
+                        <a href="?demo_role=DRIVER" class="quick-login-item text-decoration-none">
+                            <i class="fa-solid fa-id-card text-success mb-2 fs-4"></i>
+                            <div class="text-white fw-bold small">Driver</div>
+                            <div class="text-muted" style="font-size: 10px;">driver</div>
+                        </a>
+                        <a href="?demo_role=PASSENGER" class="quick-login-item text-decoration-none">
+                            <i class="fa-solid fa-users text-info mb-2 fs-4"></i>
+                            <div class="text-white fw-bold small">Passenger</div>
+                            <div class="text-muted" style="font-size: 10px;">passenger</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

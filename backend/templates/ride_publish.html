@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+
+{% block title %}Publish Ride - Ride Share{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row g-4">
+        <!-- Form Controls -->
+        <div class="col-lg-5">
+            <div class="custom-card shadow-lg mb-4">
+                <span class="badge bg-indigo bg-opacity-20 text-indigo rounded-pill px-3 py-1.5 mb-3" style="color: #8b5cf6;">DRIVER ACTION</span>
+                <h2 class="h4 text-white mb-4"><i class="fa-solid fa-file-signature text-indigo me-2"></i>Publish Ride Offer</h2>
+                
+                <form id="publish-form" method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-bold">SELECT VEHICLE</label>
+                        {{ form.vehicle }}
+                        <small class="text-muted" style="font-size: 10px;">Registered vehicles: {{ vehicle.make }} {{ vehicle.model }} ({{ vehicle.license_plate }})</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-bold">DEPARTURE TIME</label>
+                        {{ form.departure_time }}
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label text-secondary small fw-bold">FARE PER SEAT</label>
+                            {{ form.price_per_seat }}
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-secondary small fw-bold">AVAILABLE SEATS</label>
+                            {{ form.available_seats }}
+                        </div>
+                    </div>
+
+                    <!-- Hidden coordinate placeholders to satisfy validation if required -->
+                    {{ form.start_location.as_hidden }}
+                    {{ form.end_location.as_hidden }}
+
+                    <!-- Hidden Waypoints JSON input payload -->
+                    <input type="hidden" name="waypoints_json" id="waypoints_json" value="[]">
+
+                    <!-- Waypoints checklist panel -->
+                    <div class="mb-4">
+                        <label class="form-label text-secondary small fw-bold d-flex justify-content-between">
+                            <span>ROUTE WAYPOINTS SEQUENCE</span>
+                            <span class="badge bg-secondary" id="wp-count">0 stops</span>
+                        </label>
+                        <div class="card bg-dark border-secondary border-opacity-10 rounded-3 p-2">
+                            <ul id="waypoint-list" class="list-group list-group-flush text-white small mb-0" style="max-height: 200px; overflow-y: auto;">
+                                <li class="text-muted text-center py-3 list-group-item bg-transparent">Click on the map to add trip stops (waypoints).</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" id="submit-btn" class="btn btn-premium btn-lg rounded-pill" disabled>
+                            <i class="fa-solid fa-circle-check me-2"></i>Publish Active Ride
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Route Presets Panel -->
+            <div class="custom-card p-3">
+                <h5 class="text-white h6 mb-2"><i class="fa-solid fa-map-location-dot text-warning me-2"></i>Load Route Presets</h5>
+                <p class="text-secondary small mb-3">Quickly load a structured route with pre-calculated geolocations for demo purposes:</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-dark btn-sm rounded-pill text-white border border-secondary border-opacity-20" onclick="loadPublishPreset('Delhi')">Seeding Delhi Route</button>
+                    <button type="button" class="btn btn-dark btn-sm rounded-pill text-white border border-secondary border-opacity-20" onclick="loadPublishPreset('Bangalore')">Seeding Bangalore Route</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Waypoint Map -->
+        <div class="col-lg-7">
+            <div class="custom-card p-2 h-100">
+                <div class="map-wrapper h-100" style="min-height: 480px;">
+                    <div id="map"></div>
+                    <div class="position-absolute top-0 start-0 m-3 z-3 bg-dark bg-opacity-75 border border-secondary border-opacity-20 p-2 rounded-3 text-white small">
+                        <strong>Directions:</strong> Click anywhere on the map in sequential order to draw your driving path. The first point is the start, the last is the end.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Route Presets for Seeding
+    const PRESETS = {
+        'Delhi': [
+            { name: "New Delhi Railway Station", lat: 28.643000, lng: 77.222300 },
+            { name: "Connaught Place", lat: 28.630400, lng: 77.217700 },
+            { name: "Dhaula Kuan", lat: 28.591800, lng: 77.161600 },
+            { name: "Indira Gandhi International Airport (T3)", lat: 28.556200, lng: 77.100000 }
+        ],
+        'Bangalore': [
+            { name: "Indiranagar Metro Station", lat: 12.971900, lng: 77.641200 },
+            { name: "Koramangala 5th Block", lat: 12.935200, lng: 77.624400 },
+            { name: "HSR Layout Sector 1", lat: 12.912800, lng: 77.638700 },
+            { name: "Electronic City Phase 1", lat: 12.839900, lng: 77.677000 }
+        ]
+    };
+
+    // Initialize Map
+    let map = L.map('map').setView([20.5937, 78.9629], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    let waypoints = [];
+    let markers = [];
+    let routeLine = null;
+
+    // Map Click Listener
+    map.on('click', function(e) {
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+        
+        reverseGeocode(lat, lng, function(addressName) {
+            addWaypoint(addressName, lat, lng);
+        });
+    });
+
+    function addWaypoint(name, lat, lng) {
+        waypoints.push({ name, lat, lng });
+        
+        const marker = L.marker([lat, lng])
+            .addTo(map)
+            .bindPopup(`<b>Stop #${waypoints.length}</b>: ${name}`)
+            .openPopup();
+            
+        markers.push(marker);
+        updateRouteUI();
+    }
+
+    function removeWaypoint(idx) {
+        map.removeLayer(markers[idx]);
+        markers.splice(idx, 1);
+        waypoints.splice(idx, 1);
+        updateRouteUI();
+    }
+
+    function updateRouteUI() {
+        const list = document.getElementById('waypoint-list');
+        const countBadge = document.getElementById('wp-count');
+        const submitBtn = document.getElementById('submit-btn');
+
+        if (waypoints.length === 0) {
+            list.innerHTML = `<li class="text-muted text-center py-3 list-group-item bg-transparent">Click on the map to add trip stops (waypoints).</li>`;
+            countBadge.textContent = "0 stops";
+            submitBtn.disabled = true;
+            if (routeLine) map.removeLayer(routeLine);
+            return;
+        }
+
+        countBadge.textContent = `${waypoints.length} stops`;
+        submitBtn.disabled = waypoints.length < 2; // Needs at least Start & End
+
+        // Render List
+        list.innerHTML = '';
+        waypoints.forEach((wp, idx) => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item bg-transparent border-secondary border-opacity-10 d-flex justify-content-between align-items-center text-white py-2';
+            li.innerHTML = `
+                <div>
+                    <span class="badge ${idx === 0 ? 'bg-success' : (idx === waypoints.length - 1 ? 'bg-danger' : 'bg-primary')} me-2">
+                        ${idx === 0 ? 'Start' : (idx === waypoints.length - 1 ? 'End' : idx)}
+                    </span>
+                    <span>${wp.name.split(',')[0]}</span>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger border-0 rounded-circle" onclick="removeWaypoint(${idx})">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            `;
+            list.appendChild(li);
+        });
+
+        // Set start & end fields on form
+        document.getElementById('start_location').value = waypoints[0].name;
+        document.getElementById('end_location').value = waypoints[waypoints.length - 1].name;
+
+        // Serialize to JSON
+        document.getElementById('waypoints_json').value = JSON.stringify(waypoints);
+
+        // Draw Polyline
+        if (routeLine) map.removeLayer(routeLine);
+        const latlngs = waypoints.map(wp => [wp.lat, wp.lng]);
+        routeLine = L.polyline(latlngs, {color: '#6366f1', weight: 4}).addTo(map);
+        
+        let group = new L.featureGroup(markers);
+        map.fitBounds(group.getBounds().pad(0.1));
+    }
+
+    // Geocoder
+    function reverseGeocode(lat, lng, callback) {
+        if (!navigator.onLine) {
+            // Offline fallback label
+            callback(`Waypoint stop at ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+            return;
+        }
+
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+            .then(res => res.json())
+            .then(data => {
+                let address = data.display_name.split(',').slice(0, 3).join(',');
+                callback(address);
+            })
+            .catch(() => {
+                callback(`Point (${lat.toFixed(4)}, ${lng.toFixed(4)})`);
+            });
+    }
+
+    // Load presets helper
+    function loadPublishPreset(presetName) {
+        // Clear existing
+        markers.forEach(m => map.removeLayer(m));
+        markers = [];
+        waypoints = [];
+        
+        const presetData = PRESETS[presetName];
+        presetData.forEach(wp => {
+            waypoints.push({ name: wp.name, lat: wp.lat, lng: wp.lng });
+            const marker = L.marker([wp.lat, wp.lng])
+                .addTo(map)
+                .bindPopup(`<b>Stop #${waypoints.length}</b>: ${wp.name}`);
+            markers.push(marker);
+        });
+        updateRouteUI();
+    }
+</script>
+{% endblock %}

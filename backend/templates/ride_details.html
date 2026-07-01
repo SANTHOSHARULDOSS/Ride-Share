@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+
+{% block title %}Ride #{{ ride.id }} Route Details - Ride Share{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row g-4">
+        <!-- Route details sidebar -->
+        <div class="col-lg-5">
+            <div class="custom-card shadow-lg mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="badge bg-indigo rounded-pill px-3 py-1.5" style="background-color: var(--accent-primary);">Ride #{{ ride.id }}</span>
+                    {% if ride.status == 'ACTIVE' %}
+                        <span class="badge bg-success rounded-pill px-3 py-1.5"><i class="fa-solid fa-location-arrow me-1"></i> Running</span>
+                    {% elif ride.status == 'COMPLETED' %}
+                        <span class="badge bg-info text-dark rounded-pill px-3 py-1.5">Completed</span>
+                    {% elif ride.status == 'CANCELLED' %}
+                        <span class="badge bg-danger rounded-pill px-3 py-1.5">Cancelled</span>
+                    {% else %}
+                        <span class="badge bg-secondary rounded-pill px-3 py-1.5">Draft</span>
+                    {% endif %}
+                </div>
+
+                <h2 class="h4 text-white mb-2">{{ ride.start_location|truncatechars:25 }} &rarr; {{ ride.end_location|truncatechars:25 }}</h2>
+                <p class="text-secondary small mb-4"><i class="fa-solid fa-calendar me-2"></i>Leaves: <strong>{{ ride.departure_time|date:"d M Y, h:i A" }}</strong></p>
+
+                <!-- Driver details -->
+                <div class="card bg-dark border-secondary border-opacity-15 p-3 rounded-4 mb-4">
+                    <h5 class="text-white h6 mb-3"><i class="fa-solid fa-id-card text-indigo me-2"></i>Driver & Vehicle</h5>
+                    <div class="d-flex gap-3 align-items-center">
+                        <div class="bg-indigo rounded-circle d-flex align-items-center justify-content-center text-white" style="width: 48px; height: 48px; background-color: var(--accent-primary); font-size: 1.25rem;">
+                            {{ ride.driver.username|slice:":1"|upper }}
+                        </div>
+                        <div>
+                            <div class="fw-bold text-white mb-0">{{ ride.driver.username }}</div>
+                            <div class="text-secondary small">{{ ride.vehicle.make }} {{ ride.vehicle.model }} ({{ ride.vehicle.color }}) &bull; <strong>{{ ride.vehicle.license_plate }}</strong></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Simulation Panel -->
+                <div class="card border-warning border-opacity-20 bg-warning bg-opacity-5 p-3 rounded-4 mb-4">
+                    <h5 class="text-warning h6 mb-2"><i class="fa-solid fa-gauge-high me-2"></i>Live Simulation Controls</h5>
+                    <p class="text-secondary small mb-3">Simulate driving along the registered waypoint sequence for review panels.</p>
+                    
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" id="start-simulation-btn" class="btn btn-warning text-dark btn-sm rounded-pill px-3 fw-bold">
+                            <i class="fa-solid fa-play me-1"></i> Simulate Ride
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm rounded-pill px-3 fw-bold" onclick="triggerSOS('{{ ride.id }}', '{{ ride.driver.username }}')">
+                            <i class="fa-solid fa-circle-exclamation me-1"></i> SOS Emergency
+                        </button>
+                    </div>
+
+                    <!-- Live telemetry box -->
+                    <div id="telemetry-box" class="mt-3 d-none text-white small p-2 bg-dark rounded border border-secondary border-opacity-10">
+                        <div><strong>Status:</strong> <span class="text-warning" id="tel-status">Driving...</span></div>
+                        <div><strong>Current Lat/Lng:</strong> <span id="tel-coords">0.0, 0.0</span></div>
+                        <div><strong>Next Target Stop:</strong> <span id="tel-target">-</span></div>
+                    </div>
+                </div>
+
+                <!-- Driver Actions -->
+                {% if user == ride.driver %}
+                    <div class="custom-card p-3 border-secondary border-opacity-20">
+                        <h5 class="text-white h6 mb-3">Driver controls</h5>
+                        <form method="POST" action="{% url 'ride_status_update' pk=ride.id %}">
+                            {% csrf_token %}
+                            <div class="d-flex gap-2">
+                                <button type="submit" name="status" value="COMPLETED" class="btn btn-info text-dark btn-sm rounded-pill px-3 fw-bold" {% if ride.status != 'ACTIVE' %}disabled{% endif %}>
+                                    <i class="fa-solid fa-circle-check me-1"></i> Mark Completed
+                                </button>
+                                <button type="submit" name="status" value="CANCELLED" class="btn btn-outline-danger btn-sm rounded-pill px-3" {% if ride.status == 'COMPLETED' or ride.status == 'CANCELLED' %}disabled{% endif %}>
+                                    <i class="fa-solid fa-ban me-1"></i> Cancel Ride
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                {% endif %}
+
+                <!-- Passenger actions -->
+                {% if user.role == 'PASSENGER' %}
+                    <div class="custom-card p-3">
+                        <h5 class="text-white h6 mb-3">Booking Status</h5>
+                        {% if existing_booking %}
+                            <div class="alert {% if existing_booking.status == 'ACCEPTED' %}alert-success{% elif existing_booking.status == 'PENDING' %}alert-warning{% else %}alert-danger{% endif %} border-0 bg-opacity-10 rounded-4 py-3 mb-0">
+                                <strong>Request status:</strong> {{ existing_booking.get_status_display }} <br>
+                                <small class="text-secondary">Seats requested: {{ existing_booking.seats_requested }} &bull; Total cost: ₹{{ existing_booking.total_price }}</small>
+                            </div>
+                        {% else %}
+                            <form method="POST" action="{% url 'booking_create' ride_id=ride.id %}">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label text-secondary small fw-bold">SEATS REQUESTED</label>
+                                    <input type="number" name="seats_requested" class="form-control" value="1" min="1" max="{{ ride.available_seats }}">
+                                </div>
+                                <button type="submit" class="btn btn-premium rounded-pill w-100" {% if ride.available_seats == 0 %}disabled{% endif %}>
+                                    {% if ride.available_seats == 0 %}No Seats Left{% else %}<i class="fa-solid fa-credit-card me-2"></i> Book & Pay Now{% endif %}
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Interactive Map and stops -->
+        <div class="col-lg-7">
+            <div class="map-wrapper mb-4" style="height: 420px;">
+                <div id="map"></div>
+            </div>
+
+            <!-- Waypoint path stops display -->
+            <div class="custom-card">
+                <h3 class="h5 text-white mb-4"><i class="fa-solid fa-signs-post text-indigo me-2"></i>Route Stops List</h3>
+                <div class="position-relative ps-4" style="border-left: 2px dashed var(--border-color); margin-left: 10px;">
+                    {% for wp in waypoints %}
+                        <div class="mb-4 position-relative">
+                            <span class="position-absolute bg-indigo rounded-circle border border-dark d-flex align-items-center justify-content-center text-white text-xs" style="left: -32px; top: 0; width: 20px; height: 20px; background-color: var(--accent-primary); font-size: 10px;">
+                                {{ wp.sequence_order }}
+                            </span>
+                            <div class="fw-bold text-white small">{{ wp.name }}</div>
+                            <div class="text-muted" style="font-size: 10px;">Coordinates: {{ wp.latitude|floatformat:4 }}, {{ wp.longitude|floatformat:4 }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Load Waypoints coordinates injected by Django
+    const waypoints = {{ waypoints_json|safe }};
+    
+    // Initialize Map
+    let map = L.map('map').setView([20.5937, 78.9629], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    let markers = [];
+    
+    const startIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+
+    const standardIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+
+    const endIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+
+    // Plot all waypoints
+    if (waypoints.length > 0) {
+        waypoints.forEach((wp, idx) => {
+            let icon = standardIcon;
+            if (idx === 0) icon = startIcon;
+            else if (idx === waypoints.length - 1) icon = endIcon;
+
+            let marker = L.marker([wp.lat, wp.lng], {icon: icon})
+                .addTo(map)
+                .bindPopup(`<b>Stop #${wp.sequence}</b>: ${wp.name}`);
+            markers.push(marker);
+        });
+
+        // Draw path polyline
+        const latlngs = waypoints.map(wp => [wp.lat, wp.lng]);
+        L.polyline(latlngs, {color: '#6366f1', weight: 4}).addTo(map);
+
+        let group = new L.featureGroup(markers);
+        map.fitBounds(group.getBounds().pad(0.15));
+    }
+
+    // Live driver location tracking marker
+    const driverIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+    let driverMarker = null;
+
+    // Simulation Trigger
+    document.getElementById('start-simulation-btn').addEventListener('click', function() {
+        if (waypoints.length < 2) return;
+        
+        // Remove existing driver marker if any
+        if (driverMarker) map.removeLayer(driverMarker);
+        
+        // Setup initial marker position
+        driverMarker = L.marker([waypoints[0].lat, waypoints[0].lng], {icon: driverIcon})
+            .addTo(map)
+            .bindPopup("🚗 <b>Simulated Vehicle</b>")
+            .openPopup();
+
+        // Show Telemetry box
+        const telBox = document.getElementById('telemetry-box');
+        telBox.classList.remove('d-none');
+        
+        document.getElementById('tel-status').textContent = "Running (Simulating Movement)...";
+
+        // Trigger helper from app.js
+        animateDriverMovement(
+            map, 
+            driverMarker, 
+            waypoints,
+            function(lat, lng, nextTargetName) {
+                // Telemetry step update
+                document.getElementById('tel-coords').textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+                document.getElementById('tel-target').textContent = nextTargetName;
+            },
+            function() {
+                // Complete callback
+                document.getElementById('tel-status').textContent = "Arrived at Destination!";
+                alert("🎉 Ride Completed (Simulated arrival at destination)!");
+            }
+        );
+    });
+</script>
+{% endblock %}

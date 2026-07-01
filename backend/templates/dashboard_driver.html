@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+
+{% block title %}Driver Dashboard - Ride Share{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h1 class="h2 text-white mb-1">Driver Dashboard</h1>
+            <p class="text-secondary mb-0">Manage published rides and passenger requests</p>
+        </div>
+        <div>
+            {% if vehicle %}
+                <a href="{% url 'ride_publish' %}" class="btn btn-premium rounded-pill px-4 shadow">
+                    <i class="fa-solid fa-plus me-2"></i>Publish New Ride
+                </a>
+            {% else %}
+                <a href="{% url 'profile' %}" class="btn btn-warning text-dark rounded-pill px-4 fw-bold">
+                    <i class="fa-solid fa-car me-2"></i>Register Vehicle First
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Stat Grid -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card">
+                <div>
+                    <h3 class="fw-bold mb-1 text-white">{{ total_rides }}</h3>
+                    <small class="text-muted text-uppercase fw-bold" style="font-size: 11px;">Rides Published</small>
+                </div>
+                <div class="stat-icon" style="color: #6366f1;">
+                    <i class="fa-solid fa-road"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card">
+                <div>
+                    <h3 class="fw-bold mb-1 text-white">{{ active_rides }}</h3>
+                    <small class="text-muted text-uppercase fw-bold" style="font-size: 11px;">Active Trips</small>
+                </div>
+                <div class="stat-icon" style="color: #a855f7;">
+                    <i class="fa-solid fa-circle-play"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card">
+                <div>
+                    <h3 class="fw-bold mb-1 text-white">{{ completed_rides }}</h3>
+                    <small class="text-muted text-uppercase fw-bold" style="font-size: 11px;">Trips Completed</small>
+                </div>
+                <div class="stat-icon" style="color: #10b981;">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card">
+                <div>
+                    <h3 class="fw-bold mb-1 text-white">₹{{ total_earnings }}</h3>
+                    <small class="text-muted text-uppercase fw-bold" style="font-size: 11px;">Total Earnings</small>
+                </div>
+                <div class="stat-icon" style="color: #06b6d4;">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vehicle Registry Warning -->
+    {% if not vehicle %}
+        <div class="alert alert-warning border-0 bg-warning bg-opacity-10 text-warning rounded-4 p-4 mb-5">
+            <div class="d-flex gap-3">
+                <i class="fa-solid fa-triangle-exclamation fs-3"></i>
+                <div>
+                    <h4 class="h6 fw-bold text-white mb-1">Vehicle Registration Required</h4>
+                    <p class="small text-secondary mb-3">You must complete your profile and register a vehicle before you can start publishing rides and taking passengers.</p>
+                    <a href="{% url 'profile' %}" class="btn btn-warning text-dark btn-sm rounded-pill px-3 fw-bold">Register Vehicle Now</a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Pending Bookings Approval Section -->
+    <div class="custom-card mb-5">
+        <h3 class="h5 text-white mb-4"><i class="fa-solid fa-envelope-open-text text-indigo me-2"></i>Incoming Booking Requests</h3>
+        
+        {% if pending_bookings %}
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle border-secondary border-opacity-10 mb-0">
+                    <thead>
+                        <tr class="text-secondary small">
+                            <th>PASSENGER</th>
+                            <th>RIDE ROUTE</th>
+                            <th>PICKUP / DROP LOCATION</th>
+                            <th>SEATS</th>
+                            <th>FARE OFFERED</th>
+                            <th class="text-end">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in pending_bookings %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="bg-indigo rounded-circle d-flex align-items-center justify-content-center text-white small" style="width: 32px; height: 32px; background-color: var(--accent-primary);">
+                                            {{ booking.passenger.username|slice:":1"|upper }}
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-white small">{{ booking.passenger.username }}</div>
+                                            <div class="text-muted" style="font-size: 10px;">{{ booking.passenger.phone_number }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="small fw-bold text-white">#{{ booking.ride.id }} ({{ booking.ride.start_location|truncatechars:20 }} &rarr; {{ booking.ride.end_location|truncatechars:20 }})</div>
+                                </td>
+                                <td class="text-secondary small">
+                                    <strong>In:</strong> {{ booking.pickup_location }} <br>
+                                    <strong>Out:</strong> {{ booking.dropoff_location }}
+                                </td>
+                                <td class="text-white">{{ booking.seats_requested }}</td>
+                                <td class="fw-bold text-white">₹{{ booking.total_price }}</td>
+                                <td class="text-end">
+                                    <form method="POST" action="{% url 'booking_action' booking_id=booking.id %}" class="d-inline-flex gap-2">
+                                        {% csrf_token %}
+                                        <button type="submit" name="action" value="accept" class="btn btn-success btn-sm rounded-pill px-3">
+                                            <i class="fa-solid fa-check me-1"></i> Accept
+                                        </button>
+                                        <button type="submit" name="action" value="reject" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                            <i class="fa-solid fa-xmark me-1"></i> Reject
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <p class="text-secondary small mb-0">No pending passenger requests at this moment.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Published Rides List -->
+    <div class="custom-card mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <h3 class="h5 text-white mb-0"><i class="fa-solid fa-list-check text-indigo me-2"></i>My Published Trips</h3>
+            {% if vehicle %}
+                <span class="badge bg-indigo rounded-pill px-3 py-1.5" style="background-color: var(--accent-primary);"><i class="fa-solid fa-car me-1"></i> Driving: {{ vehicle.make }} {{ vehicle.model }}</span>
+            {% endif %}
+        </div>
+
+        {% if rides %}
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle border-secondary border-opacity-10 mb-0">
+                    <thead>
+                        <tr class="text-secondary small">
+                            <th>RIDE ID</th>
+                            <th>DEPARTURE</th>
+                            <th>ROUTE PATH</th>
+                            <th>SEATS LEFT</th>
+                            <th>FARE PER SEAT</th>
+                            <th>STATUS</th>
+                            <th class="text-end">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in rides %}
+                            <tr>
+                                <td class="fw-bold text-white">#{{ r.id }}</td>
+                                <td class="text-secondary small">{{ r.departure_time|date:"d M Y, h:i A" }}</td>
+                                <td>
+                                    <div class="fw-bold text-white small">{{ r.start_location }}</div>
+                                    <div class="text-muted" style="font-size: 10px;">&rarr; {{ r.end_location }}</div>
+                                </td>
+                                <td class="text-white">{{ r.available_seats }} seats</td>
+                                <td class="fw-bold text-white">₹{{ r.price_per_seat }}</td>
+                                <td>
+                                    {% if r.status == 'DRAFT' %}
+                                        <span class="badge bg-secondary rounded-pill px-3 py-1.5">Draft</span>
+                                    {% elif r.status == 'ACTIVE' %}
+                                        <span class="badge bg-success rounded-pill px-3 py-1.5"><i class="fa-solid fa-location-arrow me-1"></i> Active</span>
+                                    {% elif r.status == 'COMPLETED' %}
+                                        <span class="badge bg-info text-dark rounded-pill px-3 py-1.5"><i class="fa-solid fa-check me-1"></i> Completed</span>
+                                    {% else %}
+                                        <span class="badge bg-danger rounded-pill px-3 py-1.5"><i class="fa-solid fa-xmark me-1"></i> Cancelled</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <a href="{% url 'ride_details' pk=r.id %}" class="btn btn-secondary-custom btn-sm rounded-pill py-1 px-3">
+                                        <i class="fa-solid fa-eye me-1"></i> Manage / View
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fa-solid fa-map-pin text-muted mb-3" style="font-size: 4rem;"></i>
+                <h4 class="text-white h6 mb-2">No Published Rides</h4>
+                <p class="text-secondary small mb-4">You have not published any rides yet. Share a trip now!</p>
+                {% if vehicle %}
+                    <a href="{% url 'ride_publish' %}" class="btn btn-premium rounded-pill px-4">Publish First Ride</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

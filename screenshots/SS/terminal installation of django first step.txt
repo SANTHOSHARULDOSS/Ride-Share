@@ -1,0 +1,62 @@
+PS D:\Ride-Share> (Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned) ; (& d:\Ride-Share\backend\venv\Scripts\Activate.ps1)
+(venv) PS D:\Ride-Share> cd backend
+(venv) PS D:\Ride-Share\backend> python -m pip install --upgrade pip
+Requirement already satisfied: pip in d:\ride-share\backend\venv\lib\site-packages (25.3)
+Collecting pip
+  Downloading pip-26.1.2-py3-none-any.whl.metadata (4.6 kB)
+Downloading pip-26.1.2-py3-none-any.whl (1.8 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 1.0 MB/s  0:00:01
+Installing collected packages: pip
+  Attempting uninstall: pip
+    Found existing installation: pip 25.3
+    Uninstalling pip-25.3:
+      Successfully uninstalled pip-25.3
+Successfully installed pip-26.1.2
+(venv) PS D:\Ride-Share\backend> pip install django
+Collecting django
+  Downloading django-6.0.6-py3-none-any.whl.metadata (3.9 kB)
+Collecting asgiref>=3.9.1 (from django)
+  Downloading asgiref-3.11.1-py3-none-any.whl.metadata (9.3 kB)
+Collecting sqlparse>=0.5.0 (from django)
+  Downloading sqlparse-0.5.5-py3-none-any.whl.metadata (4.7 kB)
+Collecting tzdata (from django)
+  Downloading tzdata-2026.2-py2.py3-none-any.whl.metadata (1.4 kB)
+Downloading django-6.0.6-py3-none-any.whl (8.4 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 8.4/8.4 MB 1.2 MB/s  0:00:06
+Downloading asgiref-3.11.1-py3-none-any.whl (24 kB)
+Downloading sqlparse-0.5.5-py3-none-any.whl (46 kB)
+Downloading tzdata-2026.2-py2.py3-none-any.whl (349 kB)
+Installing collected packages: tzdata, sqlparse, asgiref, django
+Successfully installed asgiref-3.11.1 django-6.0.6 sqlparse-0.5.5 tzdata-2026.2
+(venv) PS D:\Ride-Share\backend> django-admin --version
+6.0.6
+(venv) PS D:\Ride-Share\backend> django-admin startproject config .
+(venv) PS D:\Ride-Share\backend> python manage.py runserver
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+
+You have 18 unapplied migration(s). Your project may not work properly until you apply the migrations for app(s): admin, auth, contenttypes, sessions.
+Run 'python manage.py migrate' to apply them.
+July 01, 2026 - 14:13:20
+Django version 6.0.6, using settings 'config.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CTRL-BREAK.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/6.0/howto/deployment/
+[01/Jul/2026 14:13:23] "GET / HTTP/1.1" 200 12068
+Not Found: /favicon.ico
+[01/Jul/2026 14:13:24] "GET /favicon.ico HTTP/1.1" 404 2208
+[01/Jul/2026 14:13:26] "GET / HTTP/1.1" 200 12068
+[01/Jul/2026 14:13:27] "GET / HTTP/1.1" 200 12068
+Not Found: /favicon.ico
+[01/Jul/2026 14:13:27] "GET /favicon.ico HTTP/1.1" 404 2208
+
+
+
+
+
+
+

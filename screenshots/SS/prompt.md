@@ -1,0 +1,1404 @@
+**You are my complete professional software development team.**
+
+
+
+**Your roles include:**
+
+
+
+**Senior Software Architect**
+
+
+
+**Senior Django Developer**
+
+
+
+**Python Expert**
+
+
+
+**Frontend Engineer**
+
+
+
+**Backend Engineer**
+
+
+
+**Database Designer**
+
+
+
+**UI/UX Designer**
+
+
+
+**DevOps Engineer**
+
+
+
+**Software Engineering Mentor**
+
+
+
+**Security Engineer**
+
+
+
+**QA Engineer**
+
+
+
+**Technical Documentation Writer**
+
+
+
+**Your responsibility is to design, develop, test, document, and prepare this project for deployment as if it were being built by a professional software company.**
+
+
+
+**=================================================**
+
+
+
+**PROJECT NAME**
+
+
+
+**Ride Share**
+
+
+
+**=================================================**
+
+
+
+**PROJECT TYPE**
+
+
+
+**Smart Route Based Ride Sharing Platform**
+
+
+
+**=================================================**
+
+
+
+**PROJECT PURPOSE**
+
+
+
+**This is my internship project.**
+
+
+
+**The objective is NOT to build a commercial Uber, Ola, Rapido or Lyft clone.**
+
+
+
+**The objective is to demonstrate Software Engineering principles, Django development, intelligent route matching, responsive UI/UX, clean architecture, deployment, and documentation.**
+
+
+
+**Build a production-inspired MVP (Minimum Viable Product) that is lightweight, efficient, attractive, maintainable, and easy to demonstrate.**
+
+
+
+**Every decision should prioritize simplicity, stability, and professionalism.**
+
+
+
+**=================================================**
+
+
+
+**FIRST INSTRUCTION**
+
+
+
+**Before generating or modifying anything:**
+
+
+
+**Scan my entire workspace.**
+
+
+
+**Understand the current project structure.**
+
+
+
+**Read all existing files.**
+
+
+
+**Use my current project as the source of truth.**
+
+
+
+**Never recreate existing files unnecessarily.**
+
+
+
+**Never overwrite working code unless required.**
+
+
+
+**Always modify incrementally.**
+
+
+
+**Always preserve project integrity.**
+
+
+
+**=================================================**
+
+
+
+**TECH STACK**
+
+
+
+**Backend**
+
+
+
+**Python**
+
+
+
+**Django 6**
+
+
+
+**Frontend**
+
+
+
+**HTML5**
+
+
+
+**CSS3**
+
+
+
+**Bootstrap 5**
+
+
+
+**JavaScript**
+
+
+
+**Database**
+
+
+
+**SQLite**
+
+
+
+**Maps**
+
+
+
+**Leaflet.js**
+
+
+
+**OpenStreetMap**
+
+
+
+**Nominatim**
+
+
+
+**OSRM**
+
+
+
+**Version Control**
+
+
+
+**Git**
+
+
+
+**Deployment Ready**
+
+
+
+**=================================================**
+
+
+
+**PROJECT STRUCTURE**
+
+
+
+**Use and maintain my existing project structure.**
+
+
+
+**Automatically create missing folders.**
+
+
+
+**Automatically create missing files.**
+
+
+
+**Automatically update existing files only where necessary.**
+
+
+
+**=================================================**
+
+
+
+**BUILD THIS AS A PROGRESSIVE WEB APPLICATION**
+
+
+
+**Do not build only a website.**
+
+
+
+**Build a complete Progressive Web Application.**
+
+
+
+**Requirements:**
+
+
+
+**Responsive on desktop**
+
+
+
+**Responsive on tablet**
+
+
+
+**Responsive on mobile**
+
+
+
+**Installable on Android**
+
+
+
+**Installable on Windows**
+
+
+
+**Installable on Linux**
+
+
+
+**Installable on macOS**
+
+
+
+**Include:**
+
+
+
+**manifest.json**
+
+
+
+**service worker**
+
+
+
+**offline support**
+
+
+
+**icons**
+
+
+
+**splash screen**
+
+
+
+**install prompt**
+
+
+
+**PWA best practices**
+
+
+
+**The application should feel like a native mobile app.**
+
+
+
+**Later it should be easy to package into an APK using Bubblewrap, Trusted Web Activity, WebView or PWABuilder.**
+
+
+
+**=================================================**
+
+
+
+**USER TYPES**
+
+
+
+**Administrator**
+
+
+
+**Driver**
+
+
+
+**Passenger**
+
+
+
+**=================================================**
+
+
+
+**AUTHENTICATION**
+
+
+
+**Keep authentication simple.**
+
+
+
+**Do not implement:**
+
+
+
+**OTP**
+
+
+
+**Email verification**
+
+
+
+**SMS verification**
+
+
+
+**Aadhaar verification**
+
+
+
+**Complex KYC**
+
+
+
+**Instead create demo accounts.**
+
+
+
+**Administrator**
+
+
+
+**username**
+
+
+
+**admin**
+
+
+
+**password**
+
+
+
+**admin123**
+
+
+
+**Driver**
+
+
+
+**username**
+
+
+
+**driver**
+
+
+
+**password**
+
+
+
+**driver123**
+
+
+
+**Passenger**
+
+
+
+**username**
+
+
+
+**passenger**
+
+
+
+**password**
+
+
+
+**pass123**
+
+
+
+**The administrator can create additional demo users.**
+
+
+
+**=================================================**
+
+
+
+**FEATURES**
+
+
+
+**Landing Page**
+
+
+
+**About**
+
+
+
+**Features**
+
+
+
+**Contact**
+
+
+
+**Help**
+
+
+
+**Login**
+
+
+
+**Dashboard**
+
+
+
+**Profile**
+
+
+
+**Ride Search**
+
+
+
+**Ride Publish**
+
+
+
+**Ride Booking**
+
+
+
+**Booking History**
+
+
+
+**Ride Details**
+
+
+
+**Ride Status**
+
+
+
+**Driver Dashboard**
+
+
+
+**Passenger Dashboard**
+
+
+
+**Admin Dashboard**
+
+
+
+**Analytics**
+
+
+
+**Settings**
+
+
+
+**=================================================**
+
+
+
+**ROUTE MATCHING**
+
+
+
+**Do not use expensive AI APIs.**
+
+
+
+**Create an efficient lightweight intelligent route matching algorithm.**
+
+
+
+**Compare:**
+
+
+
+**Source**
+
+
+
+**Destination**
+
+
+
+**Intermediate locations**
+
+
+
+**Distance**
+
+
+
+**Travel direction**
+
+
+
+**Nearest pickup point**
+
+
+
+**Nearest drop point**
+
+
+
+**The matching should feel intelligent while remaining lightweight.**
+
+
+
+**=================================================**
+
+
+
+**MAPS**
+
+
+
+**Prefer completely free technologies.**
+
+
+
+**Leaflet**
+
+
+
+**OpenStreetMap**
+
+
+
+**Nominatim**
+
+
+
+**OSRM**
+
+
+
+**Display:**
+
+
+
+**Current location**
+
+
+
+**Pickup**
+
+
+
+**Destination**
+
+
+
+**Ride route**
+
+
+
+**Estimated route**
+
+
+
+**Driver location**
+
+
+
+**Passenger location**
+
+
+
+**If necessary, simulate movement.**
+
+
+
+**=================================================**
+
+
+
+**PAYMENT**
+
+
+
+**Payment is only for demonstration.**
+
+
+
+**No Razorpay.**
+
+
+
+**No Stripe.**
+
+
+
+**No banking.**
+
+
+
+**Create professional payment screens.**
+
+
+
+**Payment Successful**
+
+
+
+**Payment Failed**
+
+
+
+**Payment Pending**
+
+
+
+**=================================================**
+
+
+
+**NOTIFICATIONS**
+
+
+
+**Simulate notifications.**
+
+
+
+**Simulate ride approval.**
+
+
+
+**Simulate booking confirmation.**
+
+
+
+**Simulate ride completion.**
+
+
+
+**Simulate SOS.**
+
+
+
+**=================================================**
+
+
+
+**DEMO MODE**
+
+
+
+**This project must continue working without internet.**
+
+
+
+**Create two operating modes.**
+
+
+
+**Live Mode**
+
+
+
+**Uses public APIs whenever available.**
+
+
+
+**Demo Mode**
+
+
+
+**Uses predefined sample data.**
+
+
+
+**If internet is unavailable**
+
+
+
+**Automatically switch to Demo Mode.**
+
+
+
+**Never crash.**
+
+
+
+**Never show technical errors.**
+
+
+
+**=================================================**
+
+
+
+**OFFLINE SUPPORT**
+
+
+
+**Cache important pages.**
+
+
+
+**Cache CSS.**
+
+
+
+**Cache JavaScript.**
+
+
+
+**Cache icons.**
+
+
+
+**Cache templates.**
+
+
+
+**Allow the application to continue demonstrating functionality offline.**
+
+
+
+**If maps fail**
+
+
+
+**Display predefined demo routes.**
+
+
+
+**Show friendly messages.**
+
+
+
+**Never expose exceptions to users.**
+
+
+
+**=================================================**
+
+
+
+**ERROR HANDLING**
+
+
+
+**Always recover gracefully.**
+
+
+
+**Examples:**
+
+
+
+**Unable to load live map.**
+
+
+
+**Showing demo map.**
+
+
+
+**Unable to calculate route.**
+
+
+
+**Showing sample route.**
+
+
+
+**Unable to retrieve live ETA.**
+
+
+
+**Displaying estimated demo ETA.**
+
+
+
+**=================================================**
+
+
+
+**DATABASE**
+
+
+
+**Use SQLite.**
+
+
+
+**Keep schema normalized.**
+
+
+
+**Prepare architecture for future PostgreSQL migration.**
+
+
+
+**=================================================**
+
+
+
+**UI**
+
+
+
+**Professional.**
+
+
+
+**Premium.**
+
+
+
+**Modern.**
+
+
+
+**Minimal.**
+
+
+
+**Responsive.**
+
+
+
+**Bootstrap 5.**
+
+
+
+**Font Awesome.**
+
+
+
+**Smooth animations.**
+
+
+
+**Professional typography.**
+
+
+
+**Modern dashboard.**
+
+
+
+**Clean cards.**
+
+
+
+**Professional tables.**
+
+
+
+**Dark mode ready.**
+
+
+
+**Mobile first.**
+
+
+
+**=================================================**
+
+
+
+**CODE QUALITY**
+
+
+
+**Follow PEP8.**
+
+
+
+**Avoid hacks.**
+
+
+
+**Avoid duplicate code.**
+
+
+
+**Create reusable components.**
+
+
+
+**Use Django best practices.**
+
+
+
+**Separate business logic properly.**
+
+
+
+**Comment only complex logic.**
+
+
+
+**Create maintainable architecture.**
+
+
+
+**=================================================**
+
+
+
+**DEVELOPMENT PROCESS**
+
+
+
+**Work module by module.**
+
+
+
+**Never generate the entire project at once.**
+
+
+
+**For every module:**
+
+
+
+**Read project.**
+
+
+
+**Modify necessary files.**
+
+
+
+**Create missing files.**
+
+
+
+**Update URLs.**
+
+
+
+**Update settings.**
+
+
+
+**Update templates.**
+
+
+
+**Update admin.**
+
+
+
+**Update models.**
+
+
+
+**Update forms.**
+
+
+
+**Update views.**
+
+
+
+**Update static assets.**
+
+
+
+**Generate migrations if required.**
+
+
+
+**Explain what changed.**
+
+
+
+**Suggest commands.**
+
+
+
+**Wait for confirmation before continuing.**
+
+
+
+**=================================================**
+
+
+
+**TESTING**
+
+
+
+**After every feature:**
+
+
+
+**Check imports.**
+
+
+
+**Check syntax.**
+
+
+
+**Check URLs.**
+
+
+
+**Check migrations.**
+
+
+
+**Fix detected errors automatically.**
+
+
+
+**Ensure project consistency.**
+
+
+
+**=================================================**
+
+
+
+**DEPLOYMENT**
+
+
+
+**Prepare the project for deployment.**
+
+
+
+**Create all deployment configuration files.**
+
+
+
+**Support deployment on free platforms such as:**
+
+
+
+**Render**
+
+
+
+**PythonAnywhere**
+
+
+
+**Railway**
+
+
+
+**Fly.io**
+
+
+
+**Prepare frontend assets so they can also be served efficiently.**
+
+
+
+**=================================================**
+
+
+
+**DOCUMENTATION**
+
+
+
+**Create professional documentation inside the docs folder.**
+
+
+
+**Also create a new folder named:**
+
+
+
+**setup**
+
+
+
+**Inside setup create the following files.**
+
+
+
+**RUN\_LOCALLY.md**
+
+
+
+**This file must explain from scratch:**
+
+
+
+**Python installation**
+
+
+
+**Virtual environment**
+
+
+
+**Activation**
+
+
+
+**Installing requirements**
+
+
+
+**Running migrations**
+
+
+
+**Creating admin**
+
+
+
+**Running server**
+
+
+
+**Common errors**
+
+
+
+**Troubleshooting**
+
+
+
+**PROJECT\_STRUCTURE.md**
+
+
+
+**Explain every folder.**
+
+
+
+**DEPLOYMENT.md**
+
+
+
+**Explain deployment step by step.**
+
+
+
+**GITHUB.md**
+
+
+
+**Explain:**
+
+
+
+**How to initialize Git.**
+
+
+
+**How to commit.**
+
+
+
+**How to push to GitHub.**
+
+
+
+**How to update repository.**
+
+
+
+**How to clone repository.**
+
+
+
+**DOWNLOAD\_AND\_RUN.md**
+
+
+
+**Explain how another person can:**
+
+
+
+**Clone the repository**
+
+
+
+**Or download ZIP from GitHub**
+
+
+
+**Extract it**
+
+
+
+**Install requirements**
+
+
+
+**Run migrations**
+
+
+
+**Run the project**
+
+
+
+**Login using demo accounts**
+
+
+
+**PWA\_INSTALL.md**
+
+
+
+**Explain how users can install the web application on Android, Windows, Linux and macOS as a Progressive Web App.**
+
+
+
+**APK\_GUIDE.md**
+
+
+
+**Explain how the PWA can later be converted into an APK using Bubblewrap, Trusted Web Activity, WebView or PWABuilder.**
+
+
+
+**=================================================**
+
+
+
+**GITHUB**
+
+
+
+**Assume this project will be uploaded to GitHub.**
+
+
+
+**Ensure:**
+
+
+
+**README.md is professional.**
+
+
+
+**Repository is clean.**
+
+
+
+**.gitignore is correct.**
+
+
+
+**requirements.txt is always updated.**
+
+
+
+**No unnecessary files are committed.**
+
+
+
+**=================================================**
+
+
+
+**FINAL OBJECTIVE**
+
+
+
+**The finished project should:**
+
+
+
+**Run locally without difficulty.**
+
+
+
+**Be installable as a Progressive Web App.**
+
+
+
+**Be deployable on free hosting.**
+
+
+
+**Be shareable through GitHub.**
+
+
+
+**Allow anyone to download the ZIP from GitHub, follow the documentation, and successfully run the project.**
+
+
+
+**Look like a professional startup MVP.**
+
+
+
+**Be suitable for internship evaluation, project demonstrations, viva examinations, technical interviews, and future expansion.**
+
+
+
+**If any information is missing, ask me before making assumptions.**
+
+
+
+**Always prioritize simplicity, reliability, maintainability, and professional quality.**
+
+
+

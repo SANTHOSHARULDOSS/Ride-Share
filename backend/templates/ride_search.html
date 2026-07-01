@@ -1,0 +1,412 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Rides - Ride Share{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row g-4">
+        <!-- Search Controls -->
+        <div class="col-lg-5">
+            <div class="custom-card shadow-lg mb-4">
+                <span class="badge bg-indigo bg-opacity-20 text-indigo rounded-pill px-3 py-1.5 mb-3" style="color:#8b5cf6;">PASSENGER ACTION</span>
+                <h2 class="h4 text-white mb-4"><i class="fa-solid fa-route text-indigo me-2"></i>Search Ride Matches</h2>
+                
+                <form id="search-form" method="GET" action="{% url 'ride_search' %}">
+                    <!-- Demo Status Badge -->
+                    <div class="mb-3">
+                        <span id="map-status-badge" class="badge bg-success rounded-pill demo-status-badge"><i class="fa-solid fa-circle-check me-1"></i> Live Mode (Online)</span>
+                    </div>
+
+                    <!-- Pickup -->
+                    <div class="mb-3 position-relative">
+                        <label class="form-label text-secondary small fw-bold">PICKUP POINT</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary border-opacity-20 text-success"><i class="fa-solid fa-location-dot"></i></span>
+                            <input type="text" id="pickup_input" name="pickup_name" class="form-control bg-dark border-secondary border-opacity-20 text-white" value="{{ pickup_name }}" placeholder="Search or click on map..." required autocomplete="off">
+                        </div>
+                        <ul id="pickup-suggestions" class="list-group suggestions-list position-absolute w-100 shadow z-3 d-none"></ul>
+                        <!-- Coordinates -->
+                        <input type="hidden" id="pickup_lat" name="pickup_lat" value="{{ pickup_lat }}">
+                        <input type="hidden" id="pickup_lng" name="pickup_lng" value="{{ pickup_lng }}">
+                    </div>
+
+                    <!-- Dropoff -->
+                    <div class="mb-3 position-relative">
+                        <label class="form-label text-secondary small fw-bold">DROP POINT</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary border-opacity-20 text-danger"><i class="fa-solid fa-location-pin"></i></span>
+                            <input type="text" id="dropoff_input" name="dropoff_name" class="form-control bg-dark border-secondary border-opacity-20 text-white" value="{{ dropoff_name }}" placeholder="Search or click on map..." required autocomplete="off">
+                        </div>
+                        <ul id="dropoff-suggestions" class="list-group suggestions-list position-absolute w-100 shadow z-3 d-none"></ul>
+                        <!-- Coordinates -->
+                        <input type="hidden" id="dropoff_lat" name="dropoff_lat" value="{{ dropoff_lat }}">
+                        <input type="hidden" id="dropoff_lng" name="dropoff_lng" value="{{ dropoff_lng }}">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-secondary small fw-bold">SEATS NEEDED</label>
+                        <select name="seats" class="form-select bg-dark border-secondary border-opacity-20 text-white">
+                            <option value="1" {% if seats_needed == 1 %}selected{% endif %}>1 Seat</option>
+                            <option value="2" {% if seats_needed == 2 %}selected{% endif %}>2 Seats</option>
+                            <option value="3" {% if seats_needed == 3 %}selected{% endif %}>3 Seats</option>
+                            <option value="4" {% if seats_needed == 4 %}selected{% endif %}>4 Seats</option>
+                        </select>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-premium btn-lg rounded-pill">
+                            <i class="fa-solid fa-compass me-2"></i>Find Optimal Matches
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Predefined Demo Locations helper -->
+            <div class="custom-card p-3">
+                <h5 class="text-white h6 mb-2"><i class="fa-solid fa-lightbulb text-warning me-2"></i>Demo Suggestions</h5>
+                <p class="text-secondary small mb-2">Click below to load predefined coordinates automatically (Ideal for testing offline mode):</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-dark btn-sm rounded-pill text-white border border-secondary border-opacity-20" onclick="loadPredefinedDemo('Delhi')">Delhi Airport Route</button>
+                    <button type="button" class="btn btn-dark btn-sm rounded-pill text-white border border-secondary border-opacity-20" onclick="loadPredefinedDemo('Bangalore')">Bangalore Metro Route</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Map and Results -->
+        <div class="col-lg-7">
+            <div class="map-wrapper mb-4">
+                <div id="map"></div>
+                <div class="position-absolute bottom-0 start-0 m-3 z-3 bg-dark bg-opacity-75 backdrop-blur border border-secondary border-opacity-20 p-2 rounded-3 text-white small">
+                    <i class="fa-solid fa-mouse-pointer text-warning me-1"></i> Click map to place pins: 
+                    <span class="badge bg-success ms-1">1st = Pickup</span>
+                    <span class="badge bg-danger ms-1">2nd = Drop</span>
+                </div>
+            </div>
+
+            <!-- Matches List -->
+            {% if searched %}
+                <div class="custom-card">
+                    <h3 class="h5 text-white mb-4"><i class="fa-solid fa-list-ol text-indigo me-2"></i>Matching Rides found: {{ matches|length }}</h3>
+                    
+                    {% if matches %}
+                        <div class="d-flex flex-column gap-3">
+                            {% for match in matches %}
+                                <div class="card bg-dark border-secondary border-opacity-20 p-3 rounded-4 hover-shadow transition">
+                                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                                        <div>
+                                            <div class="d-flex align-items-center gap-2 mb-2">
+                                                <span class="badge rounded-pill py-1.5 px-3" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                                                    Match Score: {{ match.score }}%
+                                                </span>
+                                                <small class="text-muted"><i class="fa-solid fa-clock me-1"></i> Leaves: {{ match.ride.departure_time|date:"h:i A" }}</small>
+                                            </div>
+                                            <h4 class="h6 text-white mb-1">Driver: {{ match.ride.driver.username }}</h4>
+                                            <p class="text-secondary small mb-2">
+                                                <i class="fa-solid fa-car text-muted me-1"></i> {{ match.ride.vehicle.make }} {{ match.ride.vehicle.model }} ({{ match.ride.vehicle.color }}) &bull; {{ match.ride.vehicle.license_plate }}
+                                            </p>
+                                            <div class="text-secondary small" style="font-size: 11px;">
+                                                <div><i class="fa-solid fa-person-walking text-success me-1"></i> Walk to Pickup waypoint (<strong>{{ match.pickup_waypoint.name }}</strong>): <strong>{{ match.pickup_distance }} km</strong></div>
+                                                <div><i class="fa-solid fa-person-walking text-danger me-1"></i> Walk from Drop waypoint (<strong>{{ match.dropoff_waypoint.name }}</strong>): <strong>{{ match.dropoff_distance }} km</strong></div>
+                                            </div>
+                                        </div>
+                                        <div class="text-lg-end d-flex flex-column gap-2 ms-lg-auto align-items-lg-end">
+                                            <div class="h5 text-white fw-bold">₹{{ match.ride.price_per_seat }}<span class="text-muted small" style="font-size: 11px;">/seat</span></div>
+                                            
+                                            <form method="POST" action="{% url 'booking_create' ride_id=match.ride.id %}">
+                                                {% csrf_token %}
+                                                <!-- Send coordinate parameters to store on Booking -->
+                                                <input type="hidden" name="seats_requested" value="{{ seats_needed }}">
+                                                <input type="hidden" name="pickup_name" value="{{ pickup_name }}">
+                                                <input type="hidden" name="pickup_lat" value="{{ pickup_lat }}">
+                                                <input type="hidden" name="pickup_lng" value="{{ pickup_lng }}">
+                                                <input type="hidden" name="dropoff_name" value="{{ dropoff_name }}">
+                                                <input type="hidden" name="dropoff_lat" value="{{ dropoff_lat }}">
+                                                <input type="hidden" name="dropoff_lng" value="{{ dropoff_lng }}">
+                                                
+                                                <button type="submit" class="btn btn-premium btn-sm rounded-pill px-4">
+                                                    <i class="fa-solid fa-credit-card me-1"></i> Request & Pay
+                                                </button>
+                                            </form>
+                                            
+                                            <a href="{% url 'ride_details' pk=match.ride.id %}" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                                                <i class="fa-solid fa-map-location-dot me-1"></i> View Route
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 border border-secondary border-opacity-10 rounded-4">
+                            <i class="fa-solid fa-magnifying-glass-chart text-muted mb-3" style="font-size: 3rem;"></i>
+                            <h4 class="text-white h6 mb-1">No Matches Found</h4>
+                            <p class="text-secondary small mb-0 px-3">Try adjusting your search coordinates, detour distance threshold, or matching window.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .suggestions-list {
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        max-height: 200px;
+        overflow-y: auto;
+        border-radius: 0.5rem;
+        z-index: 1000;
+    }
+    .suggestions-list li {
+        color: var(--text-primary);
+        background-color: var(--bg-secondary);
+        border: none;
+        border-bottom: 1px solid var(--border-color);
+        cursor: pointer;
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+    .suggestions-list li:hover {
+        background-color: var(--accent-glow);
+        color: var(--accent-primary);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Predefined coordinates for demo fallback search
+    const PREDEFINED_LOCATIONS = [
+        { name: "New Delhi Railway Station", lat: 28.643000, lng: 77.222300, group: "Delhi" },
+        { name: "Connaught Place", lat: 28.630400, lng: 77.217700, group: "Delhi" },
+        { name: "Dhaula Kuan", lat: 28.591800, lng: 77.161600, group: "Delhi" },
+        { name: "Indira Gandhi International Airport (T3)", lat: 28.556200, lng: 77.100000, group: "Delhi" },
+        { name: "Karol Bagh", lat: 28.644100, lng: 77.189500, group: "Delhi" },
+        { name: "Noida Sector 62", lat: 28.621900, lng: 77.363900, group: "Delhi" },
+        { name: "Gurugram Cyber City", lat: 28.495000, lng: 77.089000, group: "Delhi" },
+        
+        { name: "Indiranagar Metro Station", lat: 12.971900, lng: 77.641200, group: "Bangalore" },
+        { name: "Koramangala 5th Block", lat: 12.935200, lng: 77.624400, group: "Bangalore" },
+        { name: "HSR Layout Sector 1", lat: 12.912800, lng: 77.638700, group: "Bangalore" },
+        { name: "Electronic City Phase 1", lat: 12.839900, lng: 77.677000, group: "Bangalore" },
+        { name: "Majestic Bus Station", lat: 12.977900, lng: 77.572400, group: "Bangalore" },
+        { name: "Whitefield Railway Station", lat: 12.969600, lng: 77.749900, group: "Bangalore" }
+    ];
+
+    // Initialize Map
+    let map = L.map('map').setView([20.5937, 78.9629], 5); // Center on India
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    let pickupMarker = null;
+    let dropoffMarker = null;
+
+    // Custom Icons
+    const pickupIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+
+    const dropoffIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+
+    // Check pre-filled values
+    const initPLat = parseFloat(document.getElementById('pickup_lat').value);
+    const initPLng = parseFloat(document.getElementById('pickup_lng').value);
+    const initDLat = parseFloat(document.getElementById('dropoff_lat').value);
+    const initDLng = parseFloat(document.getElementById('dropoff_lng').value);
+
+    if (initPLat && initPLng) {
+        setPickupMarker(initPLat, initPLng, document.getElementById('pickup_input').value);
+    }
+    if (initDLat && initDLng) {
+        setDropoffMarker(initDLat, initDLng, document.getElementById('dropoff_input').value);
+    }
+    fitMapBounds();
+
+    // Map Click Listener
+    map.on('click', function(e) {
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+
+        if (!pickupMarker) {
+            reverseGeocode(lat, lng, function(address) {
+                setPickupMarker(lat, lng, address);
+            });
+        } else if (!dropoffMarker) {
+            reverseGeocode(lat, lng, function(address) {
+                setDropoffMarker(lat, lng, address);
+            });
+        } else {
+            // Reset both
+            map.removeLayer(pickupMarker);
+            pickupMarker = null;
+            document.getElementById('pickup_lat').value = '';
+            document.getElementById('pickup_lng').value = '';
+            document.getElementById('pickup_input').value = '';
+
+            map.removeLayer(dropoffMarker);
+            dropoffMarker = null;
+            document.getElementById('dropoff_lat').value = '';
+            document.getElementById('dropoff_lng').value = '';
+            document.getElementById('dropoff_input').value = '';
+            
+            reverseGeocode(lat, lng, function(address) {
+                setPickupMarker(lat, lng, address);
+            });
+        }
+    });
+
+    function setPickupMarker(lat, lng, label) {
+        document.getElementById('pickup_lat').value = lat;
+        document.getElementById('pickup_lng').value = lng;
+        document.getElementById('pickup_input').value = label;
+
+        if (pickupMarker) map.removeLayer(pickupMarker);
+
+        pickupMarker = L.marker([lat, lng], {icon: pickupIcon, draggable: true})
+            .addTo(map)
+            .bindPopup("<b>Pickup:</b> " + label)
+            .openPopup();
+
+        pickupMarker.on('dragend', function(event) {
+            let position = pickupMarker.getLatLng();
+            reverseGeocode(position.lat, position.lng, function(address) {
+                setPickupMarker(position.lat, position.lng, address);
+            });
+        });
+        fitMapBounds();
+    }
+
+    function setDropoffMarker(lat, lng, label) {
+        document.getElementById('dropoff_lat').value = lat;
+        document.getElementById('dropoff_lng').value = lng;
+        document.getElementById('dropoff_input').value = label;
+
+        if (dropoffMarker) map.removeLayer(dropoffMarker);
+
+        dropoffMarker = L.marker([lat, lng], {icon: dropoffIcon, draggable: true})
+            .addTo(map)
+            .bindPopup("<b>Dropoff:</b> " + label)
+            .openPopup();
+
+        dropoffMarker.on('dragend', function(event) {
+            let position = dropoffMarker.getLatLng();
+            reverseGeocode(position.lat, position.lng, function(address) {
+                setDropoffMarker(position.lat, position.lng, address);
+            });
+        });
+        fitMapBounds();
+    }
+
+    function fitMapBounds() {
+        if (pickupMarker && dropoffMarker) {
+            let group = new L.featureGroup([pickupMarker, dropoffMarker]);
+            map.fitBounds(group.getBounds().pad(0.1));
+        } else if (pickupMarker) {
+            map.setView(pickupMarker.getLatLng(), 13);
+        }
+    }
+
+    // Geocoding and Autocomplete helpers
+    function reverseGeocode(lat, lng, callback) {
+        if (!navigator.onLine) {
+            // Find closest predefined coordinate locally
+            let minDistance = floatMax();
+            let closestLoc = PREDEFINED_LOCATIONS[0];
+            PREDEFINED_LOCATIONS.forEach(loc => {
+                let dist = Math.hypot(loc.lat - lat, loc.lng - lng);
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    closestLoc = loc;
+                }
+            });
+            callback(closestLoc.name);
+            return;
+        }
+
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+            .then(res => res.json())
+            .then(data => {
+                let address = data.display_name.split(',').slice(0, 3).join(',');
+                callback(address);
+            })
+            .catch(() => {
+                callback(`Pinned Location (${lat.toFixed(4)}, ${lng.toFixed(4)})`);
+            });
+    }
+
+    function floatMax() { return Number.MAX_VALUE; }
+
+    // Autocomplete Suggestions logic
+    setupSuggestions('pickup_input', 'pickup_suggestions', setPickupMarker);
+    setupSuggestions('dropoff_input', 'dropoff_suggestions', setDropoffMarker);
+
+    function setupSuggestions(inputId, listId, selectCallback) {
+        const input = document.getElementById(inputId);
+        const list = document.getElementById(listId);
+
+        input.addEventListener('input', function() {
+            const query = input.value.trim().toLowerCase();
+            if (!query) {
+                list.classList.add('d-none');
+                return;
+            }
+
+            // Always prioritize local predefined coordinates (Offline First UI)
+            const localMatches = PREDEFINED_LOCATIONS.filter(loc => 
+                loc.name.toLowerCase().includes(query)
+            );
+
+            renderSuggestions(localMatches, list, selectCallback);
+        });
+
+        // Hide list when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target !== input) {
+                list.classList.add('d-none');
+            }
+        });
+    }
+
+    function renderSuggestions(matches, listElement, selectCallback) {
+        listElement.innerHTML = '';
+        if (matches.length === 0) {
+            listElement.classList.add('d-none');
+            return;
+        }
+        listElement.classList.remove('d-none');
+        matches.forEach(item => {
+            const li = document.createElement('li');
+            li.innerHTML = `<i class="fa-solid fa-map-pin me-2 text-indigo"></i> ${item.name} <span class="badge bg-secondary float-end">${item.group}</span>`;
+            li.addEventListener('click', () => {
+                selectCallback(item.lat, item.lng, item.name);
+                listElement.classList.add('d-none');
+            });
+            listElement.appendChild(li);
+        });
+    }
+
+    // Load Predefined Demo coordinates helper
+    function loadPredefinedDemo(cityGroup) {
+        const locations = PREDEFINED_LOCATIONS.filter(loc => loc.group === cityGroup);
+        if (locations.length >= 2) {
+            // Load 1st location as pickup and 2nd location as dropoff
+            setPickupMarker(locations[0].lat, locations[0].lng, locations[0].name);
+            setDropoffMarker(locations[1].lat, locations[1].lng, locations[1].name);
+        }
+    }
+</script>
+{% endblock %}
