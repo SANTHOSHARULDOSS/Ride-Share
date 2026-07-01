@@ -66,6 +66,7 @@
                 <h5 class="text-white h6 mb-2"><i class="fa-solid fa-lightbulb text-warning me-2"></i>Demo Suggestions</h5>
                 <p class="text-secondary small mb-2">Click below to load predefined coordinates automatically (Ideal for testing offline mode):</p>
                 <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-dark btn-sm rounded-pill text-white border border-secondary border-opacity-20" onclick="loadPredefinedDemo('Chennai')">Chennai Central Route</button>
                     <button type="button" class="btn btn-dark btn-sm rounded-pill text-white border border-secondary border-opacity-20" onclick="loadPredefinedDemo('Delhi')">Delhi Airport Route</button>
                     <button type="button" class="btn btn-dark btn-sm rounded-pill text-white border border-secondary border-opacity-20" onclick="loadPredefinedDemo('Bangalore')">Bangalore Metro Route</button>
                 </div>
@@ -178,6 +179,17 @@
 <script>
     // Predefined coordinates for demo fallback search
     const PREDEFINED_LOCATIONS = [
+        { name: "Chennai Central Railway Station", lat: 13.082700, lng: 80.270700, group: "Chennai" },
+        { name: "T. Nagar Bus Terminus", lat: 13.040500, lng: 80.233700, group: "Chennai" },
+        { name: "Guindy Kathipara Junction", lat: 13.010100, lng: 80.201500, group: "Chennai" },
+        { name: "Sholinganallur Junction (OMR)", lat: 12.901000, lng: 80.227900, group: "Chennai" },
+        { name: "Chennai International Airport", lat: 12.981600, lng: 80.163800, group: "Chennai" },
+        { name: "Velachery Phoenix Marketcity", lat: 12.979000, lng: 80.219000, group: "Chennai" },
+        { name: "Adyar Depot", lat: 13.006300, lng: 80.257400, group: "Chennai" },
+        { name: "Siruseri SIPCOT IT Park", lat: 12.827700, lng: 80.218500, group: "Chennai" },
+        { name: "Tambaram Railway Station", lat: 12.922900, lng: 80.127500, group: "Chennai" },
+        { name: "Marina Beach Lighthouse", lat: 13.050000, lng: 80.282400, group: "Chennai" },
+
         { name: "New Delhi Railway Station", lat: 28.643000, lng: 77.222300, group: "Delhi" },
         { name: "Connaught Place", lat: 28.630400, lng: 77.217700, group: "Delhi" },
         { name: "Dhaula Kuan", lat: 28.591800, lng: 77.161600, group: "Delhi" },
@@ -195,7 +207,7 @@
     ];
 
     // Initialize Map
-    let map = L.map('map').setView([20.5937, 78.9629], 5); // Center on India
+    let map = L.map('map').setView([13.0827, 80.2707], 11); // Center on Chennai
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap'
     }).addTo(map);
@@ -354,12 +366,13 @@
     setupSuggestions('pickup_input', 'pickup_suggestions', setPickupMarker);
     setupSuggestions('dropoff_input', 'dropoff_suggestions', setDropoffMarker);
 
+    let debounceTimers = {};
     function setupSuggestions(inputId, listId, selectCallback) {
         const input = document.getElementById(inputId);
         const list = document.getElementById(listId);
 
         input.addEventListener('input', function() {
-            const query = input.value.trim().toLowerCase();
+            const query = input.value.trim();
             if (!query) {
                 list.classList.add('d-none');
                 return;
@@ -367,10 +380,54 @@
 
             // Always prioritize local predefined coordinates (Offline First UI)
             const localMatches = PREDEFINED_LOCATIONS.filter(loc => 
-                loc.name.toLowerCase().includes(query)
+                loc.name.toLowerCase().includes(query.toLowerCase())
             );
 
-            renderSuggestions(localMatches, list, selectCallback);
+            if (localMatches.length > 0) {
+                renderSuggestions(localMatches, list, selectCallback);
+            }
+
+            // Fetch online suggestions from OpenStreetMap Nominatim when online
+            if (navigator.onLine && query.length > 2) {
+                if (debounceTimers[inputId]) clearTimeout(debounceTimers[inputId]);
+
+                debounceTimers[inputId] = setTimeout(() => {
+                    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=6`;
+                    fetch(url)
+                        .then(res => res.json())
+                        .then(data => {
+                            const onlineMatches = data.map(item => {
+                                const parts = item.display_name.split(',');
+                                const name = parts.slice(0, 3).join(',');
+                                return {
+                                    name: name,
+                                    lat: parseFloat(item.lat),
+                                    lng: parseFloat(item.lon),
+                                    group: "Online"
+                                };
+                            });
+
+                            // Combine and deduplicate
+                            const combined = [...localMatches];
+                            onlineMatches.forEach(om => {
+                                const isDuplicate = combined.some(c => 
+                                    Math.abs(c.lat - om.lat) < 0.0005 && Math.abs(c.lng - om.lng) < 0.0005
+                                );
+                                if (!isDuplicate) {
+                                    combined.push(om);
+                                }
+                            });
+
+                            renderSuggestions(combined, list, selectCallback);
+                        })
+                        .catch(err => {
+                            console.error("Nominatim geocoder error:", err);
+                            renderSuggestions(localMatches, list, selectCallback);
+                        });
+                }, 350);
+            } else {
+                renderSuggestions(localMatches, list, selectCallback);
+            }
         });
 
         // Hide list when clicking outside

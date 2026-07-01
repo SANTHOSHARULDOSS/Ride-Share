@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Dynamic Project Report - Ride Share{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header bar with download options -->
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                <div>
+                    <h1 class="h2 text-white mb-1"><i class="fa-solid fa-file-invoice text-indigo me-2"></i>Academic Project Report</h1>
+                    <p class="text-secondary mb-0">Decentralized credential-obscured interactive view</p>
+                </div>
+                <div>
+                    <!-- Link to download the pre-compiled word document directly -->
+                    <a href="/static/docs/PROJECT_REPORT.docx" download class="btn btn-premium rounded-pill px-4 shadow">
+                        <i class="fa-solid fa-file-word me-2"></i>Download Word Document (.docx)
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main report card -->
+            <div class="custom-card p-4 p-md-5 mb-4 shadow-lg bg-secondary border border-secondary border-opacity-10 rounded-4">
+                <div id="report-rendered" class="text-white">
+                    <!-- Loading placeholder -->
+                    <div class="text-center py-5">
+                        <i class="fa-solid fa-spinner fa-spin text-indigo mb-3" style="font-size: 3rem;"></i>
+                        <p class="text-secondary small">Compiling report layout...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Marked.js Markdown parser -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+    // Escape and load the raw Markdown from Django variable safely
+    const rawMarkdown = `{{ report_content|escapejs }}`;
+    
+    // Parse to HTML
+    document.getElementById('report-rendered').innerHTML = marked.parse(rawMarkdown);
+</script>
+
+<style>
+    /* Styling adjustments for rendered markdown inside standard theme bootstrap cards */
+    #report-rendered h1, #report-rendered h2, #report-rendered h3 {
+        color: var(--text-primary) !important;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+        font-weight: 700;
+    }
+    #report-rendered h1 {
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 0.5rem;
+        margin-top: 2rem;
+    }
+    #report-rendered h2 {
+        border-bottom: 1px dashed var(--border-color);
+        padding-bottom: 0.25rem;
+    }
+    #report-rendered p {
+        color: var(--text-secondary) !important;
+        line-height: 1.6;
+    }
+    #report-rendered ul, #report-rendered ol {
+        color: var(--text-secondary) !important;
+        padding-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    #report-rendered li {
+        margin-bottom: 0.25rem;
+    }
+    #report-rendered table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1.5rem;
+        background-color: var(--bg-tertiary);
+        color: var(--text-primary);
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+    #report-rendered th, #report-rendered td {
+        padding: 12px;
+        border: 1px solid var(--border-color);
+    }
+    #report-rendered th {
+        background-color: var(--accent-primary) !important;
+        color: #ffffff !important;
+        font-weight: bold;
+    }
+    #report-rendered blockquote {
+        border-left: 4px solid var(--accent-primary);
+        padding-left: 1rem;
+        margin: 1rem 0;
+        color: var(--text-secondary);
+        font-style: italic;
+    }
+</style>
+{% endblock %}

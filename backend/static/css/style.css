@@ -29,6 +29,7 @@
     
     /* Custom Elements */
     --navbar-bg: rgba(22, 27, 51, 0.8);
+    --toggler-filter: invert(0);
 }
 
 [data-theme="light"] {
@@ -45,6 +46,7 @@
     
     /* Custom Elements */
     --navbar-bg: rgba(255, 255, 255, 0.8);
+    --toggler-filter: invert(1) brightness(0.2);
 }
 
 /* Base Styles */
@@ -298,4 +300,70 @@ a:hover {
 .quick-login-item:hover .text-white {
     color: var(--accent-primary) !important;
 }
+
+/* 6. Button Outline Adaptive Contrast */
+.btn-outline-light {
+    border-color: var(--text-primary) !important;
+    color: var(--text-primary) !important;
+}
+.btn-outline-light:hover {
+    background-color: var(--text-primary) !important;
+    color: var(--bg-primary) !important;
+    border-color: var(--text-primary) !important;
+}
+
+/* 7. Mobile Navbar Hamburger menu toggler contrast */
+.navbar-toggler {
+    border-color: var(--border-color) !important;
+}
+.navbar-toggler-icon {
+    filter: var(--toggler-filter) !important;
+}
+
+/* 8. Component Text Contrast and Leaflet Popup Styles */
+
+/* Ensure components with solid dark/accent backgrounds keep white text in both themes */
+.btn-premium,
+.btn-premium *,
+.btn-dark,
+.btn-dark *,
+.btn-danger,
+.btn-danger *,
+.btn-success,
+.btn-success *,
+.badge.bg-success,
+.badge.bg-danger,
+.badge.bg-indigo,
+.badge.bg-primary,
+.badge.bg-secondary,
+.badge.bg-success *,
+.badge.bg-danger *,
+.badge.bg-indigo *,
+.badge.bg-primary *,
+.badge.bg-secondary *,
+.alert-danger strong,
+.alert-success strong,
+.alert-warning strong,
+.alert-info strong {
+    color: #ffffff !important;
+}
+
+/* Style Leaflet Popups to match the premium design system in both light and dark themes */
+.leaflet-popup-content-wrapper, .leaflet-popup-tip {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow) !important;
+}
+.leaflet-popup-content {
+    color: var(--text-primary) !important;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    line-height: 1.4;
+}
+.leaflet-popup-content b {
+    color: var(--accent-secondary) !important;
+}
+
+
 

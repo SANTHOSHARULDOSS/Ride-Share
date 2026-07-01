@@ -14,3 +14,9 @@ Thumbs.db
 __pycache__/
 .idea/
 .vscode/
+
+# Project Reports containing personal credentials (keep local only)
+docs/09_Project_Report/
+backend/static/docs/
+backend/docs/
+

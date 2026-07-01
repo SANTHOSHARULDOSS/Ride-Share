@@ -34,4 +34,7 @@ urlpatterns = [
     
     # Offline Support
     path('offline/', views.offline_view, name='offline'),
+    
+    # Project Report Presentation
+    path('report/', views.project_report_view, name='project_report'),
 ]

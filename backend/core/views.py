@@ -497,3 +497,25 @@ def admin_reset_view(request):
 # ---------------------------------------------------------------------
 def offline_view(request):
     return render(request, 'offline.html')
+
+# ---------------------------------------------------------------------
+# Dynamic Project Report View
+# ---------------------------------------------------------------------
+@login_required
+def project_report_view(request):
+    """
+    Renders the PROJECT_REPORT.md file dynamically on the web interface.
+    """
+    import os
+    from django.conf import settings
+    
+    report_path = os.path.join(settings.BASE_DIR, '..', 'docs', '09_Project_Report', 'PROJECT_REPORT.md')
+    content = ""
+    if os.path.exists(report_path):
+        with open(report_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+    else:
+        content = "# Project Report\n\nReport file not found locally."
+        
+    return render(request, 'project_report.html', {'report_content': content})
+

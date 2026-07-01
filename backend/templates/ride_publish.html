@@ -69,6 +69,8 @@
                 <h5 class="text-white h6 mb-2"><i class="fa-solid fa-map-location-dot text-warning me-2"></i>Load Route Presets</h5>
                 <p class="text-secondary small mb-3">Quickly load a structured route with pre-calculated geolocations for demo purposes:</p>
                 <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-dark btn-sm rounded-pill text-white border border-secondary border-opacity-20" onclick="loadPublishPreset('Chennai OMR Route')">Chennai OMR Route</button>
+                    <button type="button" class="btn btn-dark btn-sm rounded-pill text-white border border-secondary border-opacity-20" onclick="loadPublishPreset('Chennai Airport Route')">Chennai Airport Route</button>
                     <button type="button" class="btn btn-dark btn-sm rounded-pill text-white border border-secondary border-opacity-20" onclick="loadPublishPreset('Delhi')">Seeding Delhi Route</button>
                     <button type="button" class="btn btn-dark btn-sm rounded-pill text-white border border-secondary border-opacity-20" onclick="loadPublishPreset('Bangalore')">Seeding Bangalore Route</button>
                 </div>
@@ -94,6 +96,18 @@
 <script>
     // Route Presets for Seeding
     const PRESETS = {
+        'Chennai OMR Route': [
+            { name: "Chennai Central Railway Station", lat: 13.082700, lng: 80.270700 },
+            { name: "T. Nagar Bus Terminus", lat: 13.040500, lng: 80.233700 },
+            { name: "Guindy Kathipara Junction", lat: 13.010100, lng: 80.201500 },
+            { name: "Sholinganallur Junction (OMR)", lat: 12.901000, lng: 80.227900 }
+        ],
+        'Chennai Airport Route': [
+            { name: "Chennai International Airport", lat: 12.981600, lng: 80.163800 },
+            { name: "Velachery Phoenix Marketcity", lat: 12.979000, lng: 80.219000 },
+            { name: "Adyar Depot", lat: 13.006300, lng: 80.257400 },
+            { name: "Siruseri SIPCOT IT Park", lat: 12.827700, lng: 80.218500 }
+        ],
         'Delhi': [
             { name: "New Delhi Railway Station", lat: 28.643000, lng: 77.222300 },
             { name: "Connaught Place", lat: 28.630400, lng: 77.217700 },
@@ -109,7 +123,7 @@
     };
 
     // Initialize Map
-    let map = L.map('map').setView([20.5937, 78.9629], 5);
+    let map = L.map('map').setView([13.0827, 80.2707], 11); // Center on Chennai
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap'
     }).addTo(map);

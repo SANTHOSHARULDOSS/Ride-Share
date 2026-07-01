@@ -162,6 +162,99 @@ class Command(BaseCommand):
             estimated_arrival=departure_time2 + datetime.timedelta(minutes=70)
         )
 
+        # Ride 3: Chennai Central to Sholinganallur (Active)
+        departure_time3 = timezone.now() + datetime.timedelta(hours=3)
+        ride3 = Ride.objects.create(
+            driver=driver,
+            vehicle=vehicle,
+            start_location="Chennai Central Railway Station",
+            end_location="Sholinganallur Junction (OMR)",
+            departure_time=departure_time3,
+            price_per_seat=150.00,
+            available_seats=3,
+            status=Ride.Status.ACTIVE
+        )
+        
+        # Waypoints for Ride 3
+        RouteWaypoint.objects.create(
+            ride=ride3, sequence_order=0, name="Chennai Central Railway Station",
+            latitude=13.082700, longitude=80.270700, estimated_arrival=departure_time3
+        )
+        RouteWaypoint.objects.create(
+            ride=ride3, sequence_order=1, name="T. Nagar Bus Terminus",
+            latitude=13.040500, longitude=80.233700, estimated_arrival=departure_time3 + datetime.timedelta(minutes=20)
+        )
+        RouteWaypoint.objects.create(
+            ride=ride3, sequence_order=2, name="Guindy Kathipara Junction",
+            latitude=13.010100, longitude=80.201500, estimated_arrival=departure_time3 + datetime.timedelta(minutes=40)
+        )
+        RouteWaypoint.objects.create(
+            ride=ride3, sequence_order=3, name="Sholinganallur Junction (OMR)",
+            latitude=12.901000, longitude=80.227900, estimated_arrival=departure_time3 + datetime.timedelta(minutes=70)
+        )
+
+        # Ride 4: Chennai Airport to Siruseri IT Park (Active)
+        departure_time4 = timezone.now() + datetime.timedelta(hours=6)
+        ride4 = Ride.objects.create(
+            driver=driver,
+            vehicle=vehicle,
+            start_location="Chennai International Airport",
+            end_location="Siruseri SIPCOT IT Park",
+            departure_time=departure_time4,
+            price_per_seat=180.00,
+            available_seats=4,
+            status=Ride.Status.ACTIVE
+        )
+        
+        # Waypoints for Ride 4
+        RouteWaypoint.objects.create(
+            ride=ride4, sequence_order=0, name="Chennai International Airport",
+            latitude=12.981600, longitude=80.163800, estimated_arrival=departure_time4
+        )
+        RouteWaypoint.objects.create(
+            ride=ride4, sequence_order=1, name="Velachery Phoenix Marketcity",
+            latitude=12.979000, longitude=80.219000, estimated_arrival=departure_time4 + datetime.timedelta(minutes=25)
+        )
+        RouteWaypoint.objects.create(
+            ride=ride4, sequence_order=2, name="Adyar Depot",
+            latitude=13.006300, longitude=80.257400, estimated_arrival=departure_time4 + datetime.timedelta(minutes=45)
+        )
+        RouteWaypoint.objects.create(
+            ride=ride4, sequence_order=3, name="Siruseri SIPCOT IT Park",
+            latitude=12.827700, longitude=80.218500, estimated_arrival=departure_time4 + datetime.timedelta(minutes=75)
+        )
+
+        # Ride 5: Tambaram to Marina Beach (Active)
+        departure_time5 = timezone.now() + datetime.timedelta(hours=2)
+        ride5 = Ride.objects.create(
+            driver=driver,
+            vehicle=vehicle,
+            start_location="Tambaram Railway Station",
+            end_location="Marina Beach Lighthouse",
+            departure_time=departure_time5,
+            price_per_seat=100.00,
+            available_seats=4,
+            status=Ride.Status.ACTIVE
+        )
+        
+        # Waypoints for Ride 5
+        RouteWaypoint.objects.create(
+            ride=ride5, sequence_order=0, name="Tambaram Railway Station",
+            latitude=12.922900, longitude=80.127500, estimated_arrival=departure_time5
+        )
+        RouteWaypoint.objects.create(
+            ride=ride5, sequence_order=1, name="Guindy Kathipara Junction",
+            latitude=13.010100, longitude=80.201500, estimated_arrival=departure_time5 + datetime.timedelta(minutes=30)
+        )
+        RouteWaypoint.objects.create(
+            ride=ride5, sequence_order=2, name="T. Nagar Bus Terminus",
+            latitude=13.040500, longitude=80.233700, estimated_arrival=departure_time5 + datetime.timedelta(minutes=50)
+        )
+        RouteWaypoint.objects.create(
+            ride=ride5, sequence_order=3, name="Marina Beach Lighthouse",
+            latitude=13.050000, longitude=80.282400, estimated_arrival=departure_time5 + datetime.timedelta(minutes=75)
+        )
+
         self.stdout.write("Creating demo bookings...")
         # Create a booking from passenger2 on Ride 1 (Connaught Place to Dhaula Kuan)
         booking1 = Booking.objects.create(
@@ -191,6 +284,21 @@ class Command(BaseCommand):
             seats_requested=2,
             total_price=240.00,
             status=Booking.Status.ACCEPTED
+        )
+
+        # Create a pending booking on Chennai Ride 3 (Tambaram to T. Nagar)
+        booking3 = Booking.objects.create(
+            ride=ride5,
+            passenger=passenger2,
+            pickup_location="Tambaram Railway Station",
+            pickup_lat=12.922900,
+            pickup_lng=80.127500,
+            dropoff_location="T. Nagar Bus Terminus",
+            dropoff_lat=13.040500,
+            dropoff_lng=80.233700,
+            seats_requested=2,
+            total_price=200.00,
+            status=Booking.Status.PENDING
         )
 
         self.stdout.write(self.style.SUCCESS("Database seeding completed successfully!"))
