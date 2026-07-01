@@ -11,7 +11,3 @@ services:
         value: "False"
       - key: SECRET_KEY
         generateValue: true
-    disk:
-      name: sqlite-disk
-      mountPath: /data
-      sizeGB: 1
