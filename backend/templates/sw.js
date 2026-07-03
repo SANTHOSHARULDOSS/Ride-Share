@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rideshare-v2';
+const CACHE_NAME = 'rideshare-v3';
 const ASSETS_TO_CACHE = [
   '/offline/',
   '/static/css/style.css',
