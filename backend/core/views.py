@@ -250,6 +250,29 @@ def ride_search_view(request):
             seats_needed=seats_needed
         )
 
+    # Fetch active rides for smart client-side waypoint matching
+    active_rides = Ride.objects.filter(
+        status=Ride.Status.ACTIVE,
+        departure_time__gte=timezone.now()
+    ).select_related('driver', 'vehicle').prefetch_related('waypoints')
+
+    active_rides_list = []
+    for ride in active_rides:
+        active_rides_list.append({
+            'id': ride.id,
+            'driver': ride.driver.username,
+            'vehicle': f"{ride.vehicle.make} {ride.vehicle.model} ({ride.vehicle.license_plate})",
+            'price_per_seat': float(ride.price_per_seat),
+            'available_seats': ride.available_seats,
+            'departure_time': ride.departure_time.isoformat() if ride.departure_time else "",
+            'waypoints': [{
+                'name': wp.name,
+                'lat': float(wp.latitude),
+                'lng': float(wp.longitude),
+                'seq': wp.sequence_order
+            } for wp in ride.waypoints.all().order_by('sequence_order')]
+        })
+
     context = {
         'pickup_name': pickup_name,
         'dropoff_name': dropoff_name,
@@ -260,6 +283,7 @@ def ride_search_view(request):
         'dropoff_lng': dropoff_lng,
         'matches': matches,
         'searched': searched,
+        'active_rides_json': json.dumps(active_rides_list),
     }
     return render(request, 'ride_search.html', context)
 

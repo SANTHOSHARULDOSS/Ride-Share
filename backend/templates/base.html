@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,22 +16,22 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
-    <link href="/static/css/style.css" rel="stylesheet">
+    <link href="/static/css/style.css?v=20260703-1" rel="stylesheet">
     {% block extra_css %}{% endblock %}
 
     <script>
-        // Check for saved theme preference, otherwise use dark
-        const savedTheme = localStorage.getItem('theme') || 'dark';
+        // Check for saved theme preference, otherwise use light
+        const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
     </script>
 </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-glass sticky-top py-3">
+    <nav class="navbar navbar-expand-lg sticky-top py-3 app-navbar">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-white fs-4" href="{% url 'landing' %}">
-                <i class="fa-solid fa-car-side text-indigo" style="color: #8b5cf6;"></i>
-                <span>Ride<span style="color: #6366f1;">Share</span></span>
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold fs-4" href="{% url 'landing' %}">
+                <i class="fa-solid fa-car-side text-indigo"></i>
+                <span>RideShare</span>
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,29 +42,24 @@
                 <ul class="navbar-nav ms-auto align-items-center gap-2 mt-3 mt-lg-0">
                     {% if user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link text-white fw-medium px-3" href="{% url 'dashboard' %}">
+                            <a class="nav-link fw-medium px-3" href="{% url 'dashboard' %}">
                                 <i class="fa-solid fa-gauge me-1"></i> Dashboard
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white fw-medium px-3" href="{% url 'profile' %}">
+                            <a class="nav-link fw-medium px-3" href="{% url 'profile' %}">
                                 <i class="fa-solid fa-user me-1"></i> Profile
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-white fw-medium px-3" href="{% url 'project_report' %}">
-                                <i class="fa-solid fa-file-invoice me-1"></i> Project Report
                             </a>
                         </li>
                         {% if user.role == 'PASSENGER' %}
                             <li class="nav-item">
-                                <a class="nav-link text-white fw-medium px-3" href="{% url 'ride_search' %}">
+                                <a class="nav-link fw-medium px-3" href="{% url 'ride_search' %}">
                                     <i class="fa-solid fa-magnifying-glass me-1"></i> Search Rides
                                 </a>
                             </li>
                         {% elif user.role == 'DRIVER' %}
                             <li class="nav-item">
-                                <a class="nav-link text-white fw-medium px-3" href="{% url 'ride_publish' %}">
+                                <a class="nav-link fw-medium px-3" href="{% url 'ride_publish' %}">
                                     <i class="fa-solid fa-plus me-1"></i> Publish Ride
                                 </a>
                             </li>
@@ -76,13 +71,13 @@
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link text-white fw-medium px-3" href="{% url 'landing' %}#about">About</a>
+                            <a class="nav-link fw-medium px-3" href="{% url 'landing' %}#about">About</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white fw-medium px-3" href="{% url 'landing' %}#features">Features</a>
+                            <a class="nav-link fw-medium px-3" href="{% url 'landing' %}#features">Features</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white fw-medium px-3" href="{% url 'landing' %}#help">Help</a>
+                            <a class="nav-link fw-medium px-3" href="{% url 'landing' %}#help">Help</a>
                         </li>
                         <li class="nav-item ms-lg-2">
                             <a class="btn btn-premium rounded-pill px-4" href="{% url 'login' %}">
@@ -133,7 +128,7 @@
     {% endif %}
 
     <!-- Main Content -->
-    <main class="py-4">
+    <main class="py-4 py-lg-5">
         {% block content %}{% endblock %}
     </main>
 
@@ -164,7 +159,8 @@
         }
         
         // Initial setup
-        updateThemeIcon(document.documentElement.getAttribute('data-theme'));
+        const initialTheme = document.documentElement.getAttribute('data-theme');
+        updateThemeIcon(initialTheme);
 
         themeToggleBtn.addEventListener('click', () => {
             const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -173,6 +169,7 @@
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
             updateThemeIcon(newTheme);
+            window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: newTheme } }));
         });
     </script>
     {% block extra_js %}{% endblock %}

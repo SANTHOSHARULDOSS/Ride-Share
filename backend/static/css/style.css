@@ -1,240 +1,573 @@
-/* ==========================================================================
-   Ride Share Design System & Core Stylesheet
-   ========================================================================== */
+/* ========================================================================== */
+/* Ride Share UI */
+/* ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
 
 :root {
-    /* Color Tokens (Default Dark Mode) */
-    --bg-primary: #0c0f1d;
-    --bg-secondary: #161b33;
-    --bg-tertiary: #1f274a;
-    --text-primary: #f3f4f6;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
-    --border-color: rgba(255, 255, 255, 0.08);
-    --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    --bg-primary: #ffffff;
+    --bg-secondary: #f3f4f6; /* Elegant Light Grey */
+    --bg-tertiary: #e5e7eb;
     
-    /* Branding Accent */
-    --accent-primary: #6366f1;
-    --accent-secondary: #a855f7;
-    --accent-gradient: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
-    --accent-glow: rgba(99, 102, 241, 0.15);
+    --text-page: #0f172a;
+    --text-page-secondary: #334155;
+    --text-page-muted: #475569;
+    
+    --text-container: #0f172a;
+    --text-container-secondary: #334155;
+    --text-container-muted: #64748b;
 
-    /* Functional Colors */
-    --color-success: #10b981;
-    --color-danger: #ef4444;
-    --color-warning: #f59e0b;
-    --color-info: #06b6d4;
-    
-    /* Custom Elements */
-    --navbar-bg: rgba(22, 27, 51, 0.8);
-    --toggler-filter: invert(0);
+    --border-color: rgba(15, 23, 42, 0.08);
+    --card-shadow: 0 10px 28px rgba(0, 0, 0, 0.04);
+    --navbar-bg: rgba(255, 255, 255, 0.96);
+    --navbar-text: #0f172a;
+    --accent-primary: #475569;
+    --accent-secondary: #0f172a;
+    --accent-gradient: linear-gradient(135deg, #475569 0%, #0f172a 100%);
+    --accent-glow: rgba(71, 85, 105, 0.08);
+    --color-success: #16a34a;
+    --color-danger: #dc2626;
+    --color-warning: #ca8a04;
+    --color-info: #0284c7;
+    --toggler-filter: invert(0.15);
 }
 
-[data-theme="light"] {
-    /* Color Tokens (Light Mode Override) */
-    --bg-primary: #f8fafc;
+[data-theme="dark"] {
+    --bg-primary: #000000;
     --bg-secondary: #ffffff;
     --bg-tertiary: #f1f5f9;
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #94a3b8;
-    --border-color: rgba(15, 23, 42, 0.08);
-    --card-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08);
-    --accent-glow: rgba(99, 102, 241, 0.08);
     
-    /* Custom Elements */
-    --navbar-bg: rgba(255, 255, 255, 0.8);
-    --toggler-filter: invert(1) brightness(0.2);
+    --text-page: #ffffff;
+    --text-page-secondary: #e2e8f0;
+    --text-page-muted: #cbd5e1;
+    
+    --text-container: #000000;
+    --text-container-secondary: #334155;
+    --text-container-muted: #475569;
+
+    --border-color: rgba(15, 23, 42, 0.12);
+    --card-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+    --navbar-bg: rgba(0, 0, 0, 0.96);
+    --navbar-text: #ffffff;
+    --accent-primary: #cbd5e1;
+    --accent-secondary: #ffffff;
+    --accent-gradient: linear-gradient(135deg, #334155 0%, #0f172a 100%);
+    --accent-glow: rgba(255, 255, 255, 0.08);
+    --toggler-filter: invert(1);
 }
 
-/* Base Styles */
+html {
+    scroll-behavior: smooth;
+}
+
 body {
-    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-    transition: background-color 0.3s ease, color 0.3s ease;
-    overflow-x: hidden;
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-page);
     min-height: 100vh;
+    overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6,
+p, li, small, label, span, td, th, a, button, input, select, textarea {
+    color: inherit;
 }
 
 h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
-    color: var(--text-primary);
 }
 
 a {
-    color: var(--accent-primary);
-    text-decoration: none;
-    transition: color 0.2s ease;
-}
-a:hover {
     color: var(--accent-secondary);
+    text-decoration: none;
 }
 
-/* Glassmorphism & Header */
+a:hover {
+    color: var(--accent-primary);
+}
+
+.navbar,
+.app-navbar,
 .navbar-glass {
     background: var(--navbar-bg) !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border-color);
 }
 
-/* Custom Cards */
-.custom-card {
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 1.25rem;
-    padding: 1.5rem;
-    box-shadow: var(--card-shadow);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-}
-.custom-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.3);
-    border-color: rgba(99, 102, 241, 0.3);
+.navbar-brand,
+.nav-link {
+    color: var(--navbar-text) !important;
 }
 
-/* Stat Grid */
+.navbar-brand:hover,
+.nav-link:hover,
+.nav-link:focus {
+    color: var(--navbar-text) !important;
+}
+
+.custom-card,
+.stat-card,
+.card,
+.accordion-item,
+.list-group-item,
+.modal-content,
+.demo-accounts-card,
+.quick-login-item,
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+    background-color: var(--bg-secondary) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-container) !important;
+}
+
+.custom-card,
+.stat-card,
+.card,
+.accordion-item {
+    box-shadow: var(--card-shadow);
+}
+
+.custom-card,
+.card {
+    border-radius: 1.1rem;
+}
+
+.custom-card {
+    padding: 1.25rem;
+}
+
+.custom-card:hover {
+    transform: translateY(-1px);
+}
+
 .stat-card {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
+    gap: 1rem;
     border-radius: 1rem;
-    padding: 1.25rem;
-    box-shadow: var(--card-shadow);
+    padding: 1.1rem 1.25rem;
 }
+
 .stat-icon {
-    width: 3.5rem;
-    height: 3.5rem;
-    border-radius: 0.75rem;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.9rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
-    background: var(--accent-glow);
-    color: var(--accent-primary);
+    font-size: 1.1rem;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
 }
 
-/* Modern Buttons */
 .btn-premium {
     background: var(--accent-gradient);
-    color: #ffffff;
+    color: #ffffff !important;
     border: none;
-    border-radius: 0.75rem;
-    padding: 0.625rem 1.5rem;
+    border-radius: 0.9rem;
+    padding: 0.7rem 1.35rem;
     font-weight: 600;
-    transition: opacity 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
 }
-.btn-premium:hover {
-    opacity: 0.95;
-    color: #ffffff;
-    transform: translateY(-1px);
-    box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
-}
-.btn-premium:active {
-    transform: translateY(0);
+
+.btn-premium:hover,
+.btn-premium:focus {
+    color: #ffffff !important;
 }
 
 .btn-secondary-custom {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
+    background: var(--bg-secondary);
+    color: var(--text-primary) !important;
     border: 1px solid var(--border-color);
-    border-radius: 0.75rem;
-    padding: 0.625rem 1.5rem;
+    border-radius: 0.9rem;
+    padding: 0.7rem 1.35rem;
     font-weight: 600;
-    transition: all 0.2s ease;
 }
-.btn-secondary-custom:hover {
-    background: var(--border-color);
+
+.btn-secondary-custom:hover,
+.btn-secondary-custom:focus {
+    color: var(--text-primary) !important;
+    background: var(--bg-tertiary);
+}
+
+.btn-outline-light,
+.btn-outline-secondary,
+.btn-outline-warning,
+.btn-outline-danger,
+.btn-outline-info {
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.btn-outline-light:hover,
+.btn-outline-secondary:hover,
+.btn-outline-warning:hover,
+.btn-outline-danger:hover,
+.btn-outline-info:hover {
     color: var(--text-primary);
 }
 
-/* Map Containers */
+.bg-dark {
+    background-color: var(--bg-tertiary) !important;
+}
+
+.bg-indigo,
+.badge.bg-indigo {
+    background-color: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+}
+
+/* ========================================================================== */
+/* Context-Aware Color Inheritance and Overrides */
+/* ========================================================================== */
+
+/* 1. Page-level text styles */
+body .text-secondary {
+    color: var(--text-page-secondary) !important;
+}
+
+body .text-muted {
+    color: var(--text-page-muted) !important;
+}
+
+body .text-white {
+    color: var(--text-page) !important;
+}
+
+body .text-dark,
+body .text-black {
+    color: var(--text-page) !important;
+}
+
+/* 2. Text overrides inside containers to maintain legibility and proper hierarchy */
+.custom-card h1, .custom-card h2, .custom-card h3, .custom-card h4, .custom-card h5, .custom-card h6,
+.stat-card h1, .stat-card h2, .stat-card h3, .stat-card h4, .stat-card h5, .stat-card h6,
+.card h1, .card h2, .card h3, .card h4, .card h5, .card h6,
+.accordion-item h1, .accordion-item h2, .accordion-item h3, .accordion-item h4, .accordion-item h5, .accordion-item h6,
+.modal-content h1, .modal-content h2, .modal-content h3, .modal-content h4, .modal-content h5, .modal-content h6,
+.list-group-item h1, .list-group-item h2, .list-group-item h3, .list-group-item h4, .list-group-item h5, .list-group-item h6,
+.custom-card .text-white,
+.stat-card .text-white,
+.card .text-white,
+.accordion-item .text-white,
+.list-group-item .text-white,
+.modal-content .text-white,
+.demo-accounts-card .text-white,
+.quick-login-item .text-white,
+.leaflet-popup-content-wrapper .text-white,
+.custom-card .text-dark,
+.stat-card .text-dark,
+.card .text-dark,
+.accordion-item .text-dark,
+.list-group-item .text-dark,
+.modal-content .text-dark,
+.demo-accounts-card .text-dark,
+.quick-login-item .text-dark,
+.leaflet-popup-content-wrapper .text-dark,
+.custom-card .text-black,
+.stat-card .text-black,
+.card .text-black,
+.accordion-item .text-black,
+.list-group-item .text-black,
+.modal-content .text-black,
+.demo-accounts-card .text-black,
+.quick-login-item .text-black,
+.leaflet-popup-content-wrapper .text-black,
+.card-title,
+.modal-title {
+    color: var(--text-container) !important;
+}
+
+.custom-card .text-secondary,
+.stat-card .text-secondary,
+.card .text-secondary,
+.accordion-item .text-secondary,
+.list-group-item .text-secondary,
+.modal-content .text-secondary,
+.demo-accounts-card .text-secondary,
+.quick-login-item .text-secondary,
+.leaflet-popup-content-wrapper .text-secondary,
+.card-text,
+.quick-login-item div,
+.demo-accounts-list strong,
+.demo-accounts-card strong,
+.list-group-item small {
+    color: var(--text-container-secondary) !important;
+}
+
+.custom-card .text-muted,
+.stat-card .text-muted,
+.card .text-muted,
+.accordion-item .text-muted,
+.list-group-item .text-muted,
+.modal-content .text-muted,
+.demo-accounts-card .text-muted,
+.quick-login-item .text-muted,
+.leaflet-popup-content-wrapper .text-muted,
+.quick-login-item .text-muted {
+    color: var(--text-container-muted) !important;
+}
+
+/* 3. Dropdowns overrides */
+.dropdown-menu,
+.dropdown-item {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-container) !important;
+    border-color: var(--border-color) !important;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background-color: var(--bg-tertiary) !important;
+    color: var(--text-container) !important;
+}
+
+/* 4. Form inputs styling */
+.form-label {
+    color: var(--text-container) !important;
+}
+
+.form-control,
+.form-select,
+.input-group-text {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-container) !important;
+    border-color: var(--border-color) !important;
+}
+
+.form-control::placeholder {
+    color: var(--text-container-muted) !important;
+    opacity: 1;
+}
+
+.form-control:focus,
+.form-select:focus {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-container) !important;
+    border-color: var(--accent-primary) !important;
+    box-shadow: 0 0 0 0.2rem var(--accent-glow) !important;
+}
+
+/* 5. Table styling */
+.table {
+    --bs-table-color: var(--text-container) !important;
+    --bs-table-bg: var(--bg-secondary) !important;
+    --bs-table-striped-bg: var(--bg-tertiary) !important;
+    --bs-table-hover-bg: var(--bg-tertiary) !important;
+    --bs-table-border-color: var(--border-color) !important;
+    color: var(--text-container) !important;
+}
+
+.table thead th {
+    color: var(--text-container-secondary) !important;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+/* 6. Accordion button styles */
+.accordion-button {
+    background: transparent !important;
+    color: var(--text-container) !important;
+}
+
+.accordion-button:not(.collapsed) {
+    box-shadow: none !important;
+    color: var(--text-container) !important;
+}
+
+.accordion-button::after {
+    filter: var(--toggler-filter);
+}
+
+/* 7. Buttons protection: Preserve legibility inside filled buttons */
+.btn-premium,
+.btn-dark,
+.btn-danger,
+.btn-success,
+.btn-warning,
+.btn-info,
+.btn-primary {
+    color: #ffffff !important;
+}
+
+.btn-warning {
+    color: #111827 !important;
+}
+
+.btn-outline-secondary {
+    color: var(--text-page) !important;
+    border-color: var(--border-color) !important;
+}
+
+.btn-outline-secondary:hover {
+    color: var(--text-page) !important;
+    background-color: var(--bg-secondary) !important;
+}
+
+.btn-secondary-custom {
+    background: var(--bg-secondary) !important;
+    color: var(--text-container) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.btn-secondary-custom:hover {
+    background: var(--bg-tertiary) !important;
+    color: var(--text-container) !important;
+}
+
+/* 8. Navbar utilities */
+.navbar-toggler {
+    border-color: var(--border-color) !important;
+}
+
+.navbar-toggler-icon {
+    filter: var(--toggler-filter) !important;
+}
+
 .map-wrapper {
     position: relative;
     width: 100%;
     height: 400px;
-    border-radius: 1.25rem;
+    border-radius: 1.1rem;
     overflow: hidden;
     border: 1px solid var(--border-color);
     box-shadow: var(--card-shadow);
 }
+
 #map {
     width: 100%;
     height: 100%;
-    z-index: 1;
 }
 
-/* Offline Banner */
 .offline-banner {
     position: fixed;
-    bottom: 1.5rem;
-    right: 1.5rem;
-    background-color: var(--color-warning);
-    color: #000;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.75rem;
-    font-weight: 600;
+    right: 1rem;
+    bottom: 1rem;
     display: none;
-    z-index: 1050;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     align-items: center;
     gap: 0.5rem;
-    animation: slideUp 0.3s ease-out;
+    padding: 0.75rem 1rem;
+    border-radius: 0.85rem;
+    background: var(--color-warning);
+    color: #111827 !important;
+    box-shadow: var(--card-shadow);
+    z-index: 1050;
 }
 
-/* Quick Demo Login Cards */
 .quick-login-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 1rem;
-    margin-top: 1.5rem;
+    margin-top: 1rem;
 }
+
 .quick-login-item {
-    background: var(--bg-tertiary);
+    display: block;
+    background: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    border-radius: 0.75rem;
+    border-radius: 0.85rem;
     padding: 1rem;
     text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
 }
+
 .quick-login-item:hover {
-    border-color: var(--accent-primary);
-    background: var(--accent-glow);
-    transform: translateY(-2px);
+    background: var(--bg-tertiary);
 }
 
-/* Notifications Box */
-.notification-bell {
-    position: relative;
-    cursor: pointer;
-}
-.notification-badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    width: 10px;
-    height: 10px;
-    background-color: var(--color-danger);
-    border-radius: 50%;
+/* Note: Removed custom demo-accounts overrides to allow default container styles to apply naturally */
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow) !important;
 }
 
-/* Responsive Overrides & Mobile-First Sidebars */
-@media (max-width: 768px) {
+.leaflet-popup-content {
+    color: var(--text-primary) !important;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.leaflet-popup-content b {
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] ::selection {
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+}
+
+[data-theme="dark"] ::-moz-selection {
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+}
+
+@media (max-width: 991.98px) {
+    /* Main layout adjustments for mobile */
+    .container {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
+    
+    .row.g-4 {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+    
+    /* Order elements so map is on top on mobile on all map pages */
+    .col-lg-7 {
+        order: -1 !important; /* Move map section to top! */
+    }
+    
+    .col-lg-5 {
+        order: 1 !important; /* Move input forms below map! */
+    }
+    
     .map-wrapper {
-        height: 300px;
+        height: 340px !important;
+        border-radius: 1rem !important;
+        margin-bottom: 0.5rem !important;
     }
-    .custom-card {
-        padding: 1rem;
+    
+    .custom-card,
+    .stat-card,
+    .card {
+        padding: 1rem !important;
+        margin-bottom: 0.75rem !important;
+        border-radius: 1rem !important;
+    }
+    
+    .quick-login-grid {
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)) !important;
+        gap: 0.5rem !important;
+    }
+    
+    .suggestions-list {
+        max-height: 160px !important;
+    }
+
+    /* Locate me button custom style */
+    .leaflet-control-locate {
+        background: var(--bg-secondary) !important;
+        border: 1px solid var(--border-color) !important;
+        color: var(--text-container) !important;
+        width: 34px;
+        height: 34px;
+        line-height: 34px;
+        text-align: center;
+        border-radius: 4px;
+        cursor: pointer;
+        box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 }
 
-/* Keyframes */
 @keyframes slideUp {
     from { transform: translateY(50px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
@@ -248,122 +581,3 @@ a:hover {
 .pulse-glow-effect {
     animation: pulse-glow 2s infinite ease-in-out;
 }
-
-/* ==========================================================================
-   Universal Dynamic Theme Adapters (Dark/Light Compatibility Fixes)
-   ========================================================================== */
-
-/* 1. Override bootstrap hardcoded text-white to dynamically adjust */
-.text-white, .navbar-brand, .nav-link {
-    color: var(--text-primary) !important;
-}
-
-/* 2. Override bootstrap hardcoded bg-dark to follow theme tertiary */
-.bg-dark {
-    background-color: var(--bg-tertiary) !important;
-}
-
-/* 3. Themed Form Fields */
-.form-control, .form-select, .input-group-text {
-    background-color: var(--bg-tertiary) !important;
-    color: var(--text-primary) !important;
-    border: 1px solid var(--border-color) !important;
-}
-.form-control::placeholder {
-    color: var(--text-muted) !important;
-    opacity: 0.8;
-}
-.form-control:focus, .form-select:focus {
-    background-color: var(--bg-tertiary) !important;
-    color: var(--text-primary) !important;
-    border-color: var(--accent-primary) !important;
-    box-shadow: 0 0 0 0.25rem var(--accent-glow) !important;
-}
-
-/* 4. Themed Tables */
-.table-dark {
-    --bs-table-color: var(--text-primary) !important;
-    --bs-table-bg: var(--bg-secondary) !important;
-    --bs-table-border-color: var(--border-color) !important;
-    --bs-table-striped-bg: var(--bg-tertiary) !important;
-    --bs-table-hover-bg: var(--bg-tertiary) !important;
-    color: var(--text-primary) !important;
-}
-
-/* 5. Specific text modifications */
-.text-indigo {
-    color: var(--accent-primary) !important;
-}
-.navbar-glass .navbar-brand span {
-    color: var(--accent-secondary) !important;
-}
-.quick-login-item:hover .text-white {
-    color: var(--accent-primary) !important;
-}
-
-/* 6. Button Outline Adaptive Contrast */
-.btn-outline-light {
-    border-color: var(--text-primary) !important;
-    color: var(--text-primary) !important;
-}
-.btn-outline-light:hover {
-    background-color: var(--text-primary) !important;
-    color: var(--bg-primary) !important;
-    border-color: var(--text-primary) !important;
-}
-
-/* 7. Mobile Navbar Hamburger menu toggler contrast */
-.navbar-toggler {
-    border-color: var(--border-color) !important;
-}
-.navbar-toggler-icon {
-    filter: var(--toggler-filter) !important;
-}
-
-/* 8. Component Text Contrast and Leaflet Popup Styles */
-
-/* Ensure components with solid dark/accent backgrounds keep white text in both themes */
-.btn-premium,
-.btn-premium *,
-.btn-dark,
-.btn-dark *,
-.btn-danger,
-.btn-danger *,
-.btn-success,
-.btn-success *,
-.badge.bg-success,
-.badge.bg-danger,
-.badge.bg-indigo,
-.badge.bg-primary,
-.badge.bg-secondary,
-.badge.bg-success *,
-.badge.bg-danger *,
-.badge.bg-indigo *,
-.badge.bg-primary *,
-.badge.bg-secondary *,
-.alert-danger strong,
-.alert-success strong,
-.alert-warning strong,
-.alert-info strong {
-    color: #ffffff !important;
-}
-
-/* Style Leaflet Popups to match the premium design system in both light and dark themes */
-.leaflet-popup-content-wrapper, .leaflet-popup-tip {
-    background-color: var(--bg-secondary) !important;
-    color: var(--text-primary) !important;
-    border: 1px solid var(--border-color);
-    box-shadow: var(--card-shadow) !important;
-}
-.leaflet-popup-content {
-    color: var(--text-primary) !important;
-    font-family: 'Outfit', sans-serif;
-    font-size: 13px;
-    line-height: 1.4;
-}
-.leaflet-popup-content b {
-    color: var(--accent-secondary) !important;
-}
-
-
-

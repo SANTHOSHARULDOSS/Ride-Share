@@ -136,10 +136,31 @@
     const waypoints = {{ waypoints_json|safe }};
     
     // Initialize Map
-    let map = L.map('map').setView([13.0827, 80.2707], 11);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap'
-    }).addTo(map);
+    let map = L.map('map', {
+        zoomControl: true,
+        tap: !L.Browser.mobile
+    }).setView([13.0827, 80.2707], 11);
+
+    let tileLayer = null;
+    function updateMapTiles(theme) {
+        if (tileLayer) {
+            map.removeLayer(tileLayer);
+        }
+        let url = theme === 'dark' 
+            ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+            : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+        let attrib = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+        tileLayer = L.tileLayer(url, { attribution: attrib }).addTo(map);
+    }
+
+    // Set initial theme map tiles
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    updateMapTiles(currentTheme);
+
+    // Listen for custom theme updates
+    window.addEventListener('themeChanged', function(e) {
+        updateMapTiles(e.detail.theme);
+    });
 
     let markers = [];
     

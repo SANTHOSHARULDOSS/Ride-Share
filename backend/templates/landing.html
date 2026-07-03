@@ -7,15 +7,15 @@
     <!-- Hero Section -->
     <div class="row align-items-center justify-content-between g-5 py-4">
         <div class="col-lg-6">
-            <h1 class="display-4 fw-extrabold mb-3 text-white">
-                Intelligent Route Matching for <span style="background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Eco-Friendly Travel</span>
+            <h1 class="display-5 fw-bold mb-3">
+                Simple ride sharing for daily travel
             </h1>
             <p class="lead text-secondary mb-4">
-                A lightweight, highly efficient smart route-based ride sharing Progressive Web Application. Matches drivers and passengers along identical travel paths, reducing detour times and travel costs.
+                Find or publish a ride along a shared route with a clean, easy-to-use interface.
             </p>
             <div class="d-flex flex-wrap gap-3">
-                <a href="{% url 'login' %}" class="btn btn-premium btn-lg rounded-pill px-5 shadow pulse-glow-effect">
-                    <i class="fa-solid fa-circle-play me-2"></i>Launch Demo
+                <a href="{% url 'login' %}" class="btn btn-premium btn-lg rounded-pill px-4">
+                    <i class="fa-solid fa-circle-play me-2"></i>Open App
                 </a>
                 <a href="#features" class="btn btn-secondary-custom btn-lg rounded-pill px-4">
                     Learn More <i class="fa-solid fa-arrow-down ms-2"></i>
@@ -23,13 +23,11 @@
             </div>
         </div>
         <div class="col-lg-5 text-center">
-            <!-- Stylized illustration container -->
-            <div class="custom-card p-4 d-flex align-items-center justify-content-center shadow-lg" style="height: 380px; background: linear-gradient(145deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%);">
+            <div class="custom-card p-4 d-flex align-items-center justify-content-center" style="min-height: 320px;">
                 <div>
-                    <i class="fa-solid fa-map-location-dot text-indigo mb-4" style="font-size: 7rem; color: #8b5cf6;"></i>
-                    <h3 class="text-white">Smart Routing Map</h3>
-                    <p class="text-secondary px-3">Interact with simulated paths, GPS updates, and geocoded location pickers in real-time.</p>
-                    <span class="badge bg-success rounded-pill px-3 py-2"><i class="fa-solid fa-cloud me-1"></i> Demo Mode Enabled</span>
+                    <i class="fa-solid fa-map-location-dot text-indigo mb-4" style="font-size: 4rem;"></i>
+                    <h3 class="h4 mb-2">Route matching</h3>
+                    <p class="text-secondary px-3 mb-0">Plan trips, compare routes, and keep the flow straightforward.</p>
                 </div>
             </div>
         </div>
@@ -39,20 +37,20 @@
     <section id="about" class="py-5 my-5 border-top" style="border-color: var(--border-color) !important;">
         <div class="row align-items-center g-5">
             <div class="col-lg-5 order-lg-2">
-                <h2 class="h1 fw-bold text-white mb-4">Demonstrating Clean Architecture & Routing</h2>
+                <h2 class="h2 fw-bold mb-4">About the app</h2>
                 <p class="text-secondary mb-3">
-                    This project is a dedicated internship MVP designed to demonstrate clean coding patterns, responsive styling, and robust mathematical route calculations on a relational model in SQLite.
+                    This application is built to show a clear booking flow, simple dashboards, and route-based matching.
                 </p>
                 <p class="text-secondary mb-4">
-                    Built using Django 6, Leaflet.js, OSRM for directions, and custom HTML5 PWA components, it represents a modern native-like mobile experience.
+                    It uses Django and Leaflet, while keeping the user experience focused on the basics.
                 </p>
                 <div class="d-flex align-items-center gap-3">
-                    <div class="text-center bg-dark bg-opacity-20 border border-secondary border-opacity-10 p-3 rounded-4" style="width: 100px;">
-                        <h4 class="fw-bold mb-0 text-white">0%</h4>
+                    <div class="text-center bg-dark bg-opacity-10 border p-3 rounded-4" style="width: 100px;">
+                        <h4 class="fw-bold mb-0">0%</h4>
                         <small class="text-muted">Detours</small>
                     </div>
-                    <div class="text-center bg-dark bg-opacity-20 border border-secondary border-opacity-10 p-3 rounded-4" style="width: 100px;">
-                        <h4 class="fw-bold mb-0 text-white">Free</h4>
+                    <div class="text-center bg-dark bg-opacity-10 border p-3 rounded-4" style="width: 100px;">
+                        <h4 class="fw-bold mb-0">Free</h4>
                         <small class="text-muted">OSM Maps</small>
                     </div>
                 </div>
@@ -61,30 +59,30 @@
                 <div class="row g-4">
                     <div class="col-sm-6">
                         <div class="custom-card h-100">
-                            <i class="fa-solid fa-code text-indigo fs-3 mb-3" style="color: #6366f1;"></i>
-                            <h5 class="text-white">Django 6 Backend</h5>
-                            <p class="text-secondary small mb-0">Clean models, optimized querysets, and relational schema ready for PostgreSQL.</p>
+                            <i class="fa-solid fa-code text-indigo fs-3 mb-3"></i>
+                            <h5 class="h6">Django backend</h5>
+                            <p class="text-secondary small mb-0">Models, forms, and views are kept simple and readable.</p>
                         </div>
                     </div>
                     <div class="col-sm-6">
                         <div class="custom-card h-100">
-                            <i class="fa-solid fa-network-wired text-indigo fs-3 mb-3" style="color: #8b5cf6;"></i>
-                            <h5 class="text-white">Intelligent Matching</h5>
-                            <p class="text-secondary small mb-0">Custom Haversine waypoint sequence algorithm matching pickup/drop paths in O(N).</p>
+                            <i class="fa-solid fa-network-wired text-indigo fs-3 mb-3"></i>
+                            <h5 class="h6">Route matching</h5>
+                            <p class="text-secondary small mb-0">Passengers and drivers are matched by shared route segments.</p>
                         </div>
                     </div>
                     <div class="col-sm-6">
                         <div class="custom-card h-100">
-                            <i class="fa-solid fa-mobile-screen-button text-indigo fs-3 mb-3" style="color: #a855f7;"></i>
-                            <h5 class="text-white">Native PWA Feel</h5>
-                            <p class="text-secondary small mb-0">Progressive Web Application featuring off-line caches, app manifest, and install prompts.</p>
+                            <i class="fa-solid fa-mobile-screen-button text-indigo fs-3 mb-3"></i>
+                            <h5 class="h6">Mobile friendly</h5>
+                            <p class="text-secondary small mb-0">The layout works on small screens without extra clutter.</p>
                         </div>
                     </div>
                     <div class="col-sm-6">
                         <div class="custom-card h-100">
-                            <i class="fa-solid fa-shield-halved text-indigo fs-3 mb-3" style="color: #06b6d4;"></i>
-                            <h5 class="text-white">Demo Safety (SOS)</h5>
-                            <p class="text-secondary small mb-0">Simulated SOS panic button alerting nearby endpoints and mock payment triggers.</p>
+                            <i class="fa-solid fa-shield-halved text-indigo fs-3 mb-3"></i>
+                            <h5 class="h6">Key features</h5>
+                            <p class="text-secondary small mb-0">The core flow covers search, booking, and profile management.</p>
                         </div>
                     </div>
                 </div>
@@ -95,8 +93,8 @@
     <!-- Features Section -->
     <section id="features" class="py-5 my-5 border-top" style="border-color: var(--border-color) !important;">
         <div class="text-center mb-5">
-            <span class="badge bg-indigo bg-opacity-20 text-indigo rounded-pill px-3 py-2 mb-2" style="color: #8b5cf6;">FEATURES</span>
-            <h2 class="display-5 fw-bold text-white">Full Application Capabilities</h2>
+            <span class="badge rounded-pill px-3 py-2 mb-2">Features</span>
+            <h2 class="h2 fw-bold">What it does</h2>
         </div>
         <div class="row g-4">
             <div class="col-md-4">
@@ -104,26 +102,26 @@
                     <div class="stat-icon mx-auto mb-3">
                         <i class="fa-solid fa-route"></i>
                     </div>
-                    <h4 class="text-white h5 mb-2">Flexible Waypoints</h4>
-                    <p class="text-secondary small">Drivers can select multi-stop routes. Passengers search for matching segments and get scored.</p>
+                    <h4 class="h6 mb-2">Flexible waypoints</h4>
+                    <p class="text-secondary small">Drivers can publish multi-stop trips and passengers can search them.</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="custom-card text-center h-100 p-4">
-                    <div class="stat-icon mx-auto mb-3" style="color: #a855f7;">
+                    <div class="stat-icon mx-auto mb-3">
                         <i class="fa-solid fa-credit-card"></i>
                     </div>
-                    <h4 class="text-white h5 mb-2">Simulated Checkout</h4>
-                    <p class="text-secondary small">Realistic payment screen mockups demonstrating Successful, Pending, and Failed transaction states.</p>
+                    <h4 class="h6 mb-2">Simple checkout</h4>
+                    <p class="text-secondary small">A straightforward payment screen for the demo flow.</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="custom-card text-center h-100 p-4">
-                    <div class="stat-icon mx-auto mb-3" style="color: #06b6d4;">
+                    <div class="stat-icon mx-auto mb-3">
                         <i class="fa-solid fa-bell"></i>
                     </div>
-                    <h4 class="text-white h5 mb-2">Mock Notifications</h4>
-                    <p class="text-secondary small">Real-time alerts for ride approvals, SOS alerts, and state change transitions.</p>
+                    <h4 class="h6 mb-2">Basic notifications</h4>
+                    <p class="text-secondary small">Alerts cover approvals, bookings, and status updates.</p>
                 </div>
             </div>
         </div>
@@ -133,11 +131,11 @@
     <section id="help" class="py-5 my-5 border-top" style="border-color: var(--border-color) !important;">
         <div class="row g-5">
             <div class="col-lg-4">
-                <h2 class="h1 fw-bold text-white mb-3">Frequently Asked Help</h2>
-                <p class="text-secondary">Find instant answers regarding the evaluation structure, demo login details, and offline capabilities.</p>
-                <div class="card bg-secondary bg-opacity-20 border border-secondary border-opacity-10 p-4 rounded-4 mt-4">
-                    <h5 class="text-white mb-2"><i class="fa-solid fa-lock text-warning me-2"></i>Demo Accounts</h5>
-                    <ul class="text-secondary small mb-0 ps-3">
+                <h2 class="h2 fw-bold mb-3">Frequently Asked Help</h2>
+                <p class="text-secondary">Find instant answers regarding login access, offline behavior, and core app usage.</p>
+                <div class="card p-4 rounded-4 mt-4 demo-accounts-card">
+                    <h5 class="h6 mb-2"><i class="fa-solid fa-lock text-warning me-2"></i>Account Access</h5>
+                    <ul class="text-secondary small mb-0 ps-3 demo-accounts-list">
                         <li><strong>Admin:</strong> admin / admin123</li>
                         <li><strong>Driver:</strong> driver / driver123</li>
                         <li><strong>Passenger:</strong> passenger / pass123</li>
@@ -148,8 +146,8 @@
                 <div class="accordion accordion-flush" id="faqAccordion">
                     <div class="accordion-item bg-transparent border-bottom border-secondary border-opacity-10 mb-2">
                         <h2 class="accordion-header bg-transparent" id="headingOne">
-                            <button class="accordion-button collapsed bg-transparent text-white fw-bold py-3 px-0 border-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                                How does the Offline Demo Mode function?
+                            <button class="accordion-button collapsed fw-bold py-3 px-0 border-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                How does offline mode function?
                             </button>
                         </h2>
                         <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
@@ -160,20 +158,20 @@
                     </div>
                     <div class="accordion-item bg-transparent border-bottom border-secondary border-opacity-10 mb-2">
                         <h2 class="accordion-header bg-transparent" id="headingTwo">
-                            <button class="accordion-button collapsed bg-transparent text-white fw-bold py-3 px-0 border-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                How do I trigger the PWA Installation?
+                            <button class="accordion-button collapsed fw-bold py-3 px-0 border-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                How do I install the app?
                             </button>
                         </h2>
                         <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
                             <div class="accordion-body text-secondary px-0">
-                                Open this app in Chrome, Edge, or Safari on desktop or Android. A button "Install App" will automatically appear in the top navigation bar, allowing you to install the application directly onto your system dock or app drawer.
+                                Open this app in Chrome, Edge, or Safari on desktop or Android. An install button will appear in the top navigation bar when your browser supports it.
                             </div>
                         </div>
                     </div>
                     <div class="accordion-item bg-transparent mb-2">
                         <h2 class="accordion-header bg-transparent" id="headingThree">
-                            <button class="accordion-button collapsed bg-transparent text-white fw-bold py-3 px-0 border-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                                Can the Administrator create new users?
+                            <button class="accordion-button collapsed fw-bold py-3 px-0 border-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                Can the administrator create new users?
                             </button>
                         </h2>
                         <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">

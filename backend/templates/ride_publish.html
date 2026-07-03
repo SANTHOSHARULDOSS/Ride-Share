@@ -14,6 +14,16 @@
                 <form id="publish-form" method="POST">
                     {% csrf_token %}
                     
+                    <div class="mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <span class="text-secondary small fw-bold" style="font-size: 10px;">DEMO PRESETS:</span>
+                        <div class="d-flex gap-1.5 align-items-center flex-wrap">
+                            <button type="button" class="btn btn-outline-secondary btn-xs rounded-pill py-0.5 px-2.5" style="font-size: 9px;" onclick="loadPublishPreset('Chennai OMR Route')">OMR</button>
+                            <button type="button" class="btn btn-outline-secondary btn-xs rounded-pill py-0.5 px-2.5" style="font-size: 9px;" onclick="loadPublishPreset('Chennai Airport Route')">Airport</button>
+                            <button type="button" class="btn btn-outline-secondary btn-xs rounded-pill py-0.5 px-2.5" style="font-size: 9px;" onclick="loadPublishPreset('Delhi')">Delhi</button>
+                            <button type="button" class="btn btn-outline-secondary btn-xs rounded-pill py-0.5 px-2.5" style="font-size: 9px;" onclick="loadPublishPreset('Bangalore')">Bangalore</button>
+                        </div>
+                    </div>
+                    
                     <div class="mb-3">
                         <label class="form-label text-secondary small fw-bold">SELECT VEHICLE</label>
                         {{ form.vehicle }}
@@ -64,17 +74,7 @@
                 </form>
             </div>
 
-            <!-- Route Presets Panel -->
-            <div class="custom-card p-3">
-                <h5 class="text-white h6 mb-2"><i class="fa-solid fa-map-location-dot text-warning me-2"></i>Load Route Presets</h5>
-                <p class="text-secondary small mb-3">Quickly load a structured route with pre-calculated geolocations for demo purposes:</p>
-                <div class="d-flex flex-wrap gap-2">
-                    <button type="button" class="btn btn-dark btn-sm rounded-pill text-white border border-secondary border-opacity-20" onclick="loadPublishPreset('Chennai OMR Route')">Chennai OMR Route</button>
-                    <button type="button" class="btn btn-dark btn-sm rounded-pill text-white border border-secondary border-opacity-20" onclick="loadPublishPreset('Chennai Airport Route')">Chennai Airport Route</button>
-                    <button type="button" class="btn btn-dark btn-sm rounded-pill text-white border border-secondary border-opacity-20" onclick="loadPublishPreset('Delhi')">Seeding Delhi Route</button>
-                    <button type="button" class="btn btn-dark btn-sm rounded-pill text-white border border-secondary border-opacity-20" onclick="loadPublishPreset('Bangalore')">Seeding Bangalore Route</button>
-                </div>
-            </div>
+            <!-- Route Presets Panel Merged into Main Card -->
         </div>
 
         <!-- Waypoint Map -->
@@ -123,10 +123,61 @@
     };
 
     // Initialize Map
-    let map = L.map('map').setView([13.0827, 80.2707], 11); // Center on Chennai
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap'
-    }).addTo(map);
+    let map = L.map('map', {
+        zoomControl: true,
+        tap: !L.Browser.mobile
+    }).setView([13.0827, 80.2707], 11); // Center on Chennai
+
+    let tileLayer = null;
+    function updateMapTiles(theme) {
+        if (tileLayer) {
+            map.removeLayer(tileLayer);
+        }
+        let url = theme === 'dark' 
+            ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+            : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+        let attrib = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+        tileLayer = L.tileLayer(url, { attribution: attrib }).addTo(map);
+    }
+
+    // Set initial theme map tiles
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    updateMapTiles(currentTheme);
+
+    // Listen for custom theme updates
+    window.addEventListener('themeChanged', function(e) {
+        updateMapTiles(e.detail.theme);
+    });
+
+    // Custom "Locate Me" Control
+    L.Control.Locate = L.Control.extend({
+        onAdd: function(map) {
+            let container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+            let button = L.DomUtil.create('a', 'leaflet-control-locate', container);
+            button.innerHTML = '<i class="fa-solid fa-location-crosshairs text-indigo" style="font-size: 16px;"></i>';
+            button.title = "Locate Me";
+
+            L.DomEvent.on(button, 'click', function(e) {
+                L.DomEvent.stopPropagation(e);
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        let lat = position.coords.latitude;
+                        let lng = position.coords.longitude;
+                        reverseGeocode(lat, lng, function(address) {
+                            addWaypoint(address, lat, lng);
+                            map.flyTo([lat, lng], 14, { animate: true, duration: 1.5 });
+                        });
+                    }, function(error) {
+                        alert("Error getting location: " + error.message);
+                    });
+                } else {
+                    alert("Geolocation is not supported by your browser.");
+                }
+            });
+            return container;
+        }
+    });
+    map.addControl(new L.Control.Locate({ position: 'topleft' }));
 
     let waypoints = [];
     let markers = [];
