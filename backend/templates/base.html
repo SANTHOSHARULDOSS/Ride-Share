@@ -26,7 +26,7 @@
         document.documentElement.setAttribute('data-theme', savedTheme);
     </script>
 </head>
-<body>
+<body data-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}" data-mark-read-url="{% if user.is_authenticated %}{% url 'mark_all_notifications_read' %}{% endif %}">
 
     <!-- Page Progress Bar -->
     <div id="page-progress-bar"></div>
@@ -342,7 +342,9 @@
 
     // ─── Notification Mark All Read ─────────────────────────────────────────────
     function markAllRead() {
-        fetch('{% url "mark_all_notifications_read" %}', {
+        const markReadUrl = document.body.getAttribute('data-mark-read-url');
+        if (!markReadUrl) return;
+        fetch(markReadUrl, {
             method: 'POST',
             headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' }
         }).then(() => {
@@ -374,36 +376,37 @@
             }
         });
     });
-    {% if user.is_authenticated %}
+
     // ─── Real-Time WebSocket Notifications ─────────────────────────────────────
-    (function() {
-        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const notifSocket = new WebSocket(`${wsProtocol}//${window.location.host}/ws/notifications/`);
-        notifSocket.onmessage = function(e) {
-            try {
-                const data = JSON.parse(e.data);
-                if (data.type === 'notification' && data.message) {
-                    showToast(data.title || 'RideShare', data.message, data.toast_type || 'info');
-                    // Update badge count
-                    const badge = document.querySelector('.notification-badge');
-                    const count = parseInt((badge ? badge.textContent : '0')) + 1;
-                    if (badge) {
-                        badge.textContent = count;
-                    } else {
-                        const bellWrapper = document.querySelector('.notification-bell-wrapper');
-                        if (bellWrapper) {
-                            const newBadge = document.createElement('span');
-                            newBadge.className = 'notification-badge';
-                            newBadge.textContent = '1';
-                            bellWrapper.appendChild(newBadge);
+    if (document.body.getAttribute('data-authenticated') === 'true') {
+        (function() {
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const notifSocket = new WebSocket(`${wsProtocol}//${window.location.host}/ws/notifications/`);
+            notifSocket.onmessage = function(e) {
+                try {
+                    const data = JSON.parse(e.data);
+                    if (data.type === 'notification' && data.message) {
+                        showToast(data.title || 'RideShare', data.message, data.toast_type || 'info');
+                        // Update badge count
+                        const badge = document.querySelector('.notification-badge');
+                        const count = parseInt((badge ? badge.textContent : '0')) + 1;
+                        if (badge) {
+                            badge.textContent = count;
+                        } else {
+                            const bellWrapper = document.querySelector('.notification-bell-wrapper');
+                            if (bellWrapper) {
+                                const newBadge = document.createElement('span');
+                                newBadge.className = 'notification-badge';
+                                newBadge.textContent = '1';
+                                bellWrapper.appendChild(newBadge);
+                            }
                         }
                     }
-                }
-            } catch(err) { /* ignore parse errors */ }
-        };
-        notifSocket.onerror = function() { /* fail silently */ };
-    })();
-    {% endif %}
+                } catch(err) { /* ignore parse errors */ }
+            };
+            notifSocket.onerror = function() { /* fail silently */ };
+        })();
+    }
     </script>
     {% block extra_js %}{% endblock %}
 </body>
