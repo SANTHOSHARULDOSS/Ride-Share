@@ -374,22 +374,6 @@
             }
         });
     });
-
-    // ─── PWA Install Prompt ─────────────────────────────────────────────────────
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        const installBtn = document.getElementById('pwa-install-btn');
-        if (installBtn) installBtn.classList.remove('d-none');
-        installBtn?.addEventListener('click', async () => {
-            installBtn.classList.add('d-none');
-            deferredPrompt.prompt();
-            await deferredPrompt.userChoice;
-            deferredPrompt = null;
-        });
-    });
-
     {% if user.is_authenticated %}
     // ─── Real-Time WebSocket Notifications ─────────────────────────────────────
     (function() {
