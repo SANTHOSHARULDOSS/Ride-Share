@@ -196,14 +196,28 @@
     function addWaypoint(name, lat, lng) {
         waypoints.push({ name, lat, lng });
         
-        const marker = L.marker([lat, lng])
+        const marker = L.marker([lat, lng], { draggable: true })
             .addTo(map)
             .bindPopup(`<b>Stop #${waypoints.length}</b>: ${name}`)
             .openPopup();
             
+        // Waypoint Dragging Upgrades
+        marker.on('dragend', function(event) {
+            const position = marker.getLatLng();
+            const idx = markers.indexOf(marker);
+            if (idx !== -1) {
+                reverseGeocode(position.lat, position.lng, function(addressName) {
+                    waypoints[idx] = { name: addressName, lat: position.lat, lng: position.lng };
+                    marker.bindPopup(`<b>Stop #${idx + 1}</b>: ${addressName}`).openPopup();
+                    updateRouteUI();
+                });
+            }
+        });
+            
         markers.push(marker);
         updateRouteUI();
     }
+
 
     function removeWaypoint(idx) {
         map.removeLayer(markers[idx]);
@@ -292,11 +306,25 @@
         const presetData = PRESETS[presetName];
         presetData.forEach(wp => {
             waypoints.push({ name: wp.name, lat: wp.lat, lng: wp.lng });
-            const marker = L.marker([wp.lat, wp.lng])
+            const marker = L.marker([wp.lat, wp.lng], { draggable: true })
                 .addTo(map)
                 .bindPopup(`<b>Stop #${waypoints.length}</b>: ${wp.name}`);
+                
+            marker.on('dragend', function(event) {
+                const position = marker.getLatLng();
+                const idx = markers.indexOf(marker);
+                if (idx !== -1) {
+                    reverseGeocode(position.lat, position.lng, function(addressName) {
+                        waypoints[idx] = { name: addressName, lat: position.lat, lng: position.lng };
+                        marker.bindPopup(`<b>Stop #${idx + 1}</b>: ${addressName}`).openPopup();
+                        updateRouteUI();
+                    });
+                }
+            });
+                
             markers.push(marker);
         });
+
         updateRouteUI();
     }
 </script>

@@ -1,13 +1,26 @@
 import datetime
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from core.models import User, Vehicle, Ride, RouteWaypoint, Booking
+from core.models import User, Vehicle, Ride, RouteWaypoint, Booking, UserSession, Community, CommunityMember, Friendship, Message, Notification, Event, EventAttendee, Report, SOSAlert, Rating, EmailLog, AILog
 
 class Command(BaseCommand):
     help = 'Seeds the database with demo users, vehicles, and rides'
 
     def handle(self, *args, **options):
         self.stdout.write("Clearing existing data...")
+        AILog.objects.all().delete()
+        EmailLog.objects.all().delete()
+        Rating.objects.all().delete()
+        SOSAlert.objects.all().delete()
+        Report.objects.all().delete()
+        EventAttendee.objects.all().delete()
+        Event.objects.all().delete()
+        Notification.objects.all().delete()
+        Message.objects.all().delete()
+        Friendship.objects.all().delete()
+        CommunityMember.objects.all().delete()
+        Community.objects.all().delete()
+        UserSession.objects.all().delete()
         Booking.objects.all().delete()
         RouteWaypoint.objects.all().delete()
         Ride.objects.all().delete()
@@ -299,6 +312,189 @@ class Command(BaseCommand):
             seats_requested=2,
             total_price=200.00,
             status=Booking.Status.PENDING
+        )
+
+        # -----------------------------------------------------------------
+        # Friendships
+        # -----------------------------------------------------------------
+        self.stdout.write("Creating demo friendships...")
+        Friendship.objects.create(user=passenger, friend=driver, status='ACCEPTED')
+        Friendship.objects.create(user=passenger2, friend=passenger, status='ACCEPTED')
+        Friendship.objects.create(user=passenger2, friend=driver, status='PENDING')
+
+        # -----------------------------------------------------------------
+        # Communities & Members
+        # -----------------------------------------------------------------
+        self.stdout.write("Creating demo communities...")
+        # 1. College Community
+        comm_college = Community.objects.create(
+            name="Delhi Technological University (DTU)",
+            description="Official carpooling and travel community for DTU students and faculty.",
+            rules="1. Always show your student ID on request.\n2. Share transit costs equally.\n3. Be respectful and punctual.",
+            community_type="PUBLIC",
+            category="COLLEGE",
+            invite_link="dtu-ride-share",
+            created_by=admin
+        )
+        # 2. Company Community
+        comm_company = Community.objects.create(
+            name="Office Tech Hub (Delhi/NCR)",
+            description="Commuters sharing daily office routes in Gurgaon, Noida, and Delhi.",
+            rules="1. Corporate ID verification required.\n2. No commercial drivers allowed.\n3. Respect vehicle capacity limits.",
+            community_type="PRIVATE",
+            category="OFFICE",
+            invite_link="corp-tech-delhi",
+            created_by=admin
+        )
+        
+        # Add members
+        CommunityMember.objects.create(community=comm_college, user=admin, role='ADMIN', status='APPROVED')
+        CommunityMember.objects.create(community=comm_college, user=driver, role='MODERATOR', status='APPROVED')
+        CommunityMember.objects.create(community=comm_college, user=passenger, role='MEMBER', status='APPROVED')
+        CommunityMember.objects.create(community=comm_college, user=passenger2, role='MEMBER', status='APPROVED')
+
+        CommunityMember.objects.create(community=comm_company, user=admin, role='ADMIN', status='APPROVED')
+        CommunityMember.objects.create(community=comm_company, user=driver, role='MEMBER', status='APPROVED')
+        CommunityMember.objects.create(community=comm_company, user=passenger, role='MEMBER', status='APPROVED')
+
+        # -----------------------------------------------------------------
+        # Events & RSVP
+        # -----------------------------------------------------------------
+        self.stdout.write("Creating demo events...")
+        event1 = Event.objects.create(
+            title="DTU Weekend Trekking to Mussoorie",
+            description="DTU Adventure Club organizing a weekend carpooling trip and trekking to Lal Tibba.",
+            location="Dehradun-Mussoorie bypass toll plaza",
+            date=timezone.now() + datetime.timedelta(days=5),
+            event_type="TREKKING",
+            creator=driver,
+            community=comm_college
+        )
+        EventAttendee.objects.create(event=event1, user=driver, status='GOING')
+        EventAttendee.objects.create(event=event1, user=passenger, status='GOING')
+        EventAttendee.objects.create(event=event1, user=passenger2, status='INTERESTED')
+
+        event2 = Event.objects.create(
+            title="Connaught Place Weekend Hackathon Meetup",
+            description="A casual meetup to discuss hackathon projects and share rides to the CP co-working space.",
+            location="Connaught Place Inner Circle Block A",
+            date=timezone.now() + datetime.timedelta(days=2),
+            event_type="MEETUP",
+            creator=passenger,
+            community=comm_company
+        )
+        EventAttendee.objects.create(event=event2, user=passenger, status='GOING')
+        EventAttendee.objects.create(event=event2, user=driver, status='GOING')
+
+        # -----------------------------------------------------------------
+        # Messages & Chat history
+        # -----------------------------------------------------------------
+        self.stdout.write("Creating demo chat history...")
+        # Direct Messages
+        Message.objects.create(sender=passenger, recipient=driver, content="Hi! Are you leaving from Connaught Place on time?")
+        Message.objects.create(sender=driver, recipient=passenger, content="Yes, leaving at 5:00 PM sharp. Please be near the Metro Gate 2.")
+        
+        # Community Messages
+        Message.objects.create(sender=driver, community=comm_college, content="Hey DTU team! I have 3 open seats for the weekend trip. Let me know if anyone wants to book.")
+        Message.objects.create(sender=passenger, community=comm_college, content="Awesome! Requesting a seat on your ride.")
+        
+        # Trip Messages
+        Message.objects.create(sender=passenger2, ride=ride1, content="Hi, is it fine if I carry a large suitcase?")
+        Message.objects.create(sender=driver, ride=ride1, content="Sure, the trunk has plenty of space for one suitcase.")
+
+        # -----------------------------------------------------------------
+        # Notifications
+        # -----------------------------------------------------------------
+        self.stdout.write("Creating notifications...")
+        Notification.objects.create(
+            recipient=driver,
+            sender=passenger2,
+            notification_type="TRIP_REQUEST",
+            content="passenger2 has requested a seat on your ride from Delhi to Airport.",
+            link=f"/rides/{ride1.id}/"
+        )
+        Notification.objects.create(
+            recipient=passenger,
+            sender=driver,
+            notification_type="TRIP_ACCEPTED",
+            content="driver accepted your booking request for the Koramangala trip.",
+            link=f"/rides/{ride2.id}/"
+        )
+        Notification.objects.create(
+            recipient=driver,
+            sender=passenger2,
+            notification_type="FRIEND_REQUEST",
+            content="passenger2 sent you a friend request.",
+            link="/friends/"
+        )
+
+        # -----------------------------------------------------------------
+        # Ratings
+        # -----------------------------------------------------------------
+        self.stdout.write("Creating demo ratings...")
+        # Create a completed ride to rate
+        departure_past = timezone.now() - datetime.timedelta(days=1)
+        ride_completed = Ride.objects.create(
+            driver=driver,
+            vehicle=vehicle,
+            start_location="Connaught Place",
+            end_location="Gurgaon Cyber City",
+            departure_time=departure_past,
+            price_per_seat=100.00,
+            available_seats=0,
+            status=Ride.Status.COMPLETED
+        )
+        Rating.objects.create(
+            reviewer=passenger,
+            reviewee=driver,
+            ride=ride_completed,
+            rating=5,
+            comment="Excellent driving! Very safe and punctual. Enjoyed the conversation."
+        )
+
+        # -----------------------------------------------------------------
+        # Safety & SOS Alerts & Reports
+        # -----------------------------------------------------------------
+        self.stdout.write("Creating safety alerts and reports...")
+        SOSAlert.objects.create(
+            ride=ride1,
+            user=driver,
+            latitude=28.630400,
+            longitude=77.217700,
+            is_active=False
+        )
+        Report.objects.create(
+            reporter=passenger,
+            reported_user=passenger2,
+            reason="Unprofessional behavior and constant cancellations of shared trips.",
+            status="PENDING"
+        )
+
+        # -----------------------------------------------------------------
+        # System Logs (Email and AI)
+        # -----------------------------------------------------------------
+        self.stdout.write("Creating system logs...")
+        EmailLog.objects.create(
+            recipient="passenger@rideshare.local",
+            subject="Welcome to Ride-Share!",
+            content="Welcome to our platform. We verify all members to build a safe travel community.",
+            email_type="WELCOME"
+        )
+        EmailLog.objects.create(
+            recipient="support@yourdomain.com",
+            subject="Auto-Response to ticket #1234",
+            content="Thank you for contacting support. We have classified your request and escalated to an admin.",
+            email_type="REPLY_AUTO"
+        )
+        AILog.objects.create(
+            prompt="Plan a trip from Delhi to Agra.",
+            response="AI Travel Plan:\n1. Distance: 230 km.\n2. Best Route: Yamuna Expressway.\n3. Travel time: 4 hours.\n4. Hotels: Hotel Hilton Agra (Mid-Range).",
+            log_type="TRAVEL_ASSISTANT"
+        )
+        AILog.objects.create(
+            prompt="Incoming Email: I need to verify my corporate email address.",
+            response="{'category': 'Verification Issue', 'needs_escalation': false, 'reply_content': 'Dear User, you can upload your corporate ID card...'}",
+            log_type="MAIL_RESPONDER"
         )
 
         self.stdout.write(self.style.SUCCESS("Database seeding completed successfully!"))

@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Ride Share - Smart Route Matching{% endblock %}</title>
-    
+    <title>{% block title %}RideShare — Smart Carpooling Platform{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}RideShare connects drivers and passengers for smart, affordable, and safe carpooling trips.{% endblock %}">
+
     <!-- PWA Settings -->
     <link rel="manifest" href="/static/manifest.json">
     <meta name="theme-color" content="#6366f1">
@@ -12,62 +13,181 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="/static/images/icons/icon-192x192.png">
 
-    <!-- CSS CDNs & Local Stylesheet -->
+    <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
-    <link href="/static/css/style.css?v=20260703-1" rel="stylesheet">
+    <link href="/static/css/style.css?v=20260707-2" rel="stylesheet">
     {% block extra_css %}{% endblock %}
 
     <script>
-        // Check for saved theme preference, otherwise use light
+        // Apply theme before paint to avoid FOUC
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
     </script>
 </head>
 <body>
+
+    <!-- Page Progress Bar -->
+    <div id="page-progress-bar"></div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg sticky-top py-3 app-navbar">
+    <nav class="navbar navbar-expand-lg sticky-top py-3 app-navbar" role="navigation" aria-label="Main navigation">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold fs-4" href="{% url 'landing' %}">
-                <i class="fa-solid fa-car-side text-indigo"></i>
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold fs-4" href="{% url 'landing' %}" aria-label="RideShare home">
+                <i class="fa-solid fa-car-side text-indigo" aria-hidden="true"></i>
                 <span>RideShare</span>
             </a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarNav" aria-controls="navbarNav"
+                    aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
+
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center gap-2 mt-3 mt-lg-0">
+                <ul class="navbar-nav ms-auto align-items-center gap-1 mt-3 mt-lg-0">
                     {% if user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link fw-medium px-3" href="{% url 'dashboard' %}">
-                                <i class="fa-solid fa-gauge me-1"></i> Dashboard
+                            <a class="nav-link fw-medium px-2" href="{% url 'dashboard' %}" aria-label="Go to dashboard">
+                                <i class="fa-solid fa-gauge me-1" aria-hidden="true"></i> Dashboard
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link fw-medium px-3" href="{% url 'profile' %}">
-                                <i class="fa-solid fa-user me-1"></i> Profile
+                            <a class="nav-link fw-medium px-2" href="{% url 'chat_dashboard' %}" aria-label="Open chat">
+                                <i class="fa-solid fa-comments me-1" aria-hidden="true"></i> Chat
                             </a>
                         </li>
-                        {% if user.role == 'PASSENGER' %}
-                            <li class="nav-item">
-                                <a class="nav-link fw-medium px-3" href="{% url 'ride_search' %}">
-                                    <i class="fa-solid fa-magnifying-glass me-1"></i> Search Rides
-                                </a>
-                            </li>
-                        {% elif user.role == 'DRIVER' %}
-                            <li class="nav-item">
-                                <a class="nav-link fw-medium px-3" href="{% url 'ride_publish' %}">
-                                    <i class="fa-solid fa-plus me-1"></i> Publish Ride
-                                </a>
-                            </li>
-                        {% endif %}
-                        <li class="nav-item ms-lg-2">
-                            <a class="btn btn-outline-danger rounded-pill px-3 py-1.5" href="{% url 'logout' %}">
-                                <i class="fa-solid fa-right-from-bracket me-1"></i> Logout
+                        <li class="nav-item">
+                            <a class="nav-link fw-medium px-2" href="{% url 'community_list' %}" aria-label="Browse communities">
+                                <i class="fa-solid fa-users me-1" aria-hidden="true"></i> Groups
                             </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-medium px-2" href="{% url 'event_list' %}" aria-label="Browse events">
+                                <i class="fa-solid fa-calendar-days me-1" aria-hidden="true"></i> Events
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-medium px-2" href="{% url 'friends' %}" aria-label="View friends">
+                                <i class="fa-solid fa-address-book me-1" aria-hidden="true"></i> Friends
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-medium px-2" href="{% url 'support_chatbot' %}" aria-label="AI Support">
+                                <i class="fa-solid fa-headset me-1" aria-hidden="true"></i> AI Help
+                            </a>
+                        </li>
+                        {% if user.role == 'ADMIN' %}
+                        <li class="nav-item">
+                            <a class="nav-link fw-medium px-2 text-warning" href="{% url 'admin_system_logs' %}" aria-label="System logs">
+                                <i class="fa-solid fa-gauge-high me-1" aria-hidden="true"></i> Logs
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        <!-- Notification Bell -->
+                        <li class="nav-item dropdown">
+                            <button class="btn nav-link fw-medium px-2 notification-bell-wrapper"
+                                    type="button" id="notificationDropdown"
+                                    data-bs-toggle="dropdown" aria-expanded="false"
+                                    aria-label="Notifications ({{ unread_notification_count }} unread)">
+                                <i class="fa-solid fa-bell" aria-hidden="true"></i>
+                                {% if unread_notification_count > 0 %}
+                                <span class="notification-badge" aria-label="{{ unread_notification_count }} unread notifications">
+                                    {{ unread_notification_count }}
+                                </span>
+                                {% endif %}
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationDropdown">
+                                <div class="dropdown-header d-flex justify-content-between align-items-center">
+                                    <span>Notifications</span>
+                                    {% if unread_notification_count > 0 %}
+                                    <a href="{% url 'mark_all_notifications_read' %}" class="small text-indigo fw-medium" 
+                                       onclick="event.preventDefault(); markAllRead();">Mark all read</a>
+                                    {% endif %}
+                                </div>
+                                {% if recent_notifications %}
+                                    {% for notif in recent_notifications %}
+                                    <a href="{% if notif.link %}{{ notif.link }}{% else %}{% url 'notifications' %}{% endif %}"
+                                       class="notif-item {% if not notif.is_read %}unread{% endif %}"
+                                       data-notif-id="{{ notif.id }}">
+                                        <div class="notif-icon">
+                                            {% if notif.notification_type == 'FRIEND_REQUEST' %}<i class="fa-solid fa-user-plus"></i>
+                                            {% elif notif.notification_type == 'TRIP_REQUEST' %}<i class="fa-solid fa-car"></i>
+                                            {% elif notif.notification_type == 'TRIP_ACCEPTED' %}<i class="fa-solid fa-check-circle"></i>
+                                            {% elif notif.notification_type == 'MESSAGE' %}<i class="fa-solid fa-comment"></i>
+                                            {% elif notif.notification_type == 'COMMUNITY_INVITE' %}<i class="fa-solid fa-users"></i>
+                                            {% else %}<i class="fa-solid fa-bell"></i>{% endif %}
+                                        </div>
+                                        <div class="notif-content">
+                                            <div class="notif-text">{{ notif.content|truncatechars:80 }}</div>
+                                            <div class="notif-time">{{ notif.created_at|timesince }} ago</div>
+                                        </div>
+                                    </a>
+                                    {% endfor %}
+                                    <div class="p-3 text-center border-top">
+                                        <a href="{% url 'notifications' %}" class="small fw-medium text-indigo">
+                                            View all notifications
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    <div class="p-4 text-center text-muted">
+                                        <i class="fa-regular fa-bell-slash fs-3 mb-2 d-block opacity-40"></i>
+                                        <small>No notifications yet</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </li>
+
+                        <!-- Profile Menu -->
+                        <li class="nav-item dropdown">
+                            <button class="btn nav-link fw-medium px-2 dropdown-toggle"
+                                    id="profileDropdown" data-bs-toggle="dropdown"
+                                    aria-expanded="false" aria-label="Profile menu">
+                                {% if user.profile_picture %}
+                                <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" 
+                                     class="rounded-circle" width="28" height="28" style="object-fit:cover;">
+                                {% else %}
+                                <i class="fa-solid fa-circle-user" aria-hidden="true"></i>
+                                {% endif %}
+                                <span class="d-none d-lg-inline ms-1">{{ user.username|truncatechars:12 }}</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown"
+                                style="border-radius:0.875rem; border-color:var(--border-color); background:var(--bg-primary);">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'profile' %}">
+                                        <i class="fa-solid fa-user me-2 text-indigo"></i> My Profile
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'reputation' %}">
+                                        <i class="fa-solid fa-shield-halved me-2 text-indigo"></i> Trust Score
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'sessions' %}">
+                                        <i class="fa-solid fa-laptop me-2 text-indigo"></i> My Devices
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'notifications' %}">
+                                        <i class="fa-solid fa-bell me-2 text-indigo"></i> Notifications
+                                        {% if unread_notification_count > 0 %}
+                                        <span class="badge bg-danger rounded-pill ms-1">{{ unread_notification_count }}</span>
+                                        {% endif %}
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider" style="border-color:var(--border-color);"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                                        <i class="fa-solid fa-right-from-bracket me-2"></i> Sign Out
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
                     {% else %}
                         <li class="nav-item">
@@ -77,26 +197,34 @@
                             <a class="nav-link fw-medium px-3" href="{% url 'landing' %}#features">Features</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link fw-medium px-3" href="{% url 'landing' %}#help">Help</a>
+                            <a class="nav-link fw-medium px-3" href="{% url 'contact' %}">Contact</a>
                         </li>
                         <li class="nav-item ms-lg-2">
-                            <a class="btn btn-premium rounded-pill px-4" href="{% url 'login' %}">
+                            <a class="btn btn-outline-secondary rounded-pill px-3" href="{% url 'login' %}">
                                 <i class="fa-solid fa-right-to-bracket me-1"></i> Login
                             </a>
                         </li>
+                        <li class="nav-item ms-lg-1">
+                            <a class="btn btn-premium rounded-pill px-4" href="{% url 'register' %}">
+                                <i class="fa-solid fa-user-plus me-1"></i> Sign Up
+                            </a>
+                        </li>
                     {% endif %}
-                    
+
                     <!-- PWA Install Button -->
-                    <li class="nav-item ms-lg-2">
-                        <button id="pwa-install-btn" class="btn btn-outline-warning rounded-pill px-3 py-1.5 d-none">
-                            <i class="fa-solid fa-download me-1"></i> Install App
+                    <li class="nav-item ms-lg-1">
+                        <button id="pwa-install-btn" class="btn btn-outline-warning rounded-pill px-3 d-none"
+                                aria-label="Install RideShare app">
+                            <i class="fa-solid fa-download me-1" aria-hidden="true"></i> Install
                         </button>
                     </li>
-                    
-                    <!-- Theme Toggler Button -->
-                    <li class="nav-item ms-lg-2">
-                        <button id="theme-toggle" class="btn btn-outline-secondary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                            <i id="theme-icon" class="fa-solid fa-sun"></i>
+
+                    <!-- Theme Toggle -->
+                    <li class="nav-item ms-lg-1">
+                        <button id="theme-toggle"
+                                class="btn btn-outline-secondary rounded-circle p-0 d-flex align-items-center justify-content-center"
+                                style="width:38px;height:38px;" aria-label="Toggle dark/light mode">
+                            <i id="theme-icon" class="fa-solid fa-sun" aria-hidden="true"></i>
                         </button>
                     </li>
                 </ul>
@@ -106,18 +234,18 @@
 
     <!-- Alert Messages -->
     {% if messages %}
-        <div class="container mt-3">
+        <div class="container mt-3" role="alert" aria-live="polite">
             {% for message in messages %}
-                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show rounded-4 shadow-sm" role="alert">
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-4 shadow-sm animate-fade-up" role="alert">
                     <div class="d-flex align-items-center gap-2">
                         {% if message.tags == 'success' %}
-                            <i class="fa-solid fa-circle-check fs-5"></i>
+                            <i class="fa-solid fa-circle-check fs-5" aria-hidden="true"></i>
                         {% elif message.tags == 'warning' %}
-                            <i class="fa-solid fa-circle-exclamation fs-5"></i>
-                        {% elif message.tags == 'error' %}
-                            <i class="fa-solid fa-circle-xmark fs-5"></i>
+                            <i class="fa-solid fa-circle-exclamation fs-5" aria-hidden="true"></i>
+                        {% elif message.tags == 'danger' %}
+                            <i class="fa-solid fa-circle-xmark fs-5" aria-hidden="true"></i>
                         {% else %}
-                            <i class="fa-solid fa-circle-info fs-5"></i>
+                            <i class="fa-solid fa-circle-info fs-5" aria-hidden="true"></i>
                         {% endif %}
                         <div>{{ message }}</div>
                     </div>
@@ -128,15 +256,27 @@
     {% endif %}
 
     <!-- Main Content -->
-    <main class="py-4 py-lg-5">
+    <main class="py-4 py-lg-5" id="main-content">
         {% block content %}{% endblock %}
     </main>
 
     <!-- Footer -->
-    <footer class="py-4 mt-auto border-top" style="background-color: var(--bg-secondary); border-color: var(--border-color) !important;">
-        <div class="container text-center">
-            <p class="mb-1 text-secondary">&copy; 2026 Ride Share Platform MVP. Built for demonstration and evaluation.</p>
-            <small class="text-muted">Smart Routing &bull; PWA Installable &bull; Demo Mode Fallbacks</small>
+    <footer class="py-4 mt-auto border-top" style="background-color:var(--bg-secondary);border-color:var(--border-color)!important;">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
+                    <a class="d-inline-flex align-items-center gap-2 fw-bold text-decoration-none" href="{% url 'landing' %}">
+                        <i class="fa-solid fa-car-side text-indigo" aria-hidden="true"></i>
+                        <span style="color:var(--text-page);">RideShare</span>
+                    </a>
+                    <span class="text-muted ms-2" style="font-size:0.8rem;">© 2026 — Smart Carpooling Platform</span>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <a href="{% url 'contact' %}" class="text-muted small me-3 text-decoration-none">Contact</a>
+                    <a href="{% url 'landing' %}#features" class="text-muted small me-3 text-decoration-none">Features</a>
+                    <a href="{% url 'support_chatbot' %}" class="text-muted small text-decoration-none">AI Help</a>
+                </div>
+            </div>
         </div>
     </footer>
 
@@ -144,33 +284,142 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="/static/js/app.js"></script>
-    
-    <script>
-        // Theme Toggler JavaScript
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const themeIcon = document.getElementById('theme-icon');
-        
-        function updateThemeIcon(theme) {
-            if (theme === 'light') {
-                themeIcon.className = 'fa-solid fa-moon';
-            } else {
-                themeIcon.className = 'fa-solid fa-sun';
-            }
-        }
-        
-        // Initial setup
-        const initialTheme = document.documentElement.getAttribute('data-theme');
-        updateThemeIcon(initialTheme);
 
-        themeToggleBtn.addEventListener('click', () => {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeIcon(newTheme);
-            window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: newTheme } }));
+    <script>
+    // ─── Page Progress Bar ─────────────────────────────────────────────────────
+    const progressBar = document.getElementById('page-progress-bar');
+    let pProgress = 0;
+    const pTimer = setInterval(() => {
+        pProgress = Math.min(pProgress + Math.random() * 15, 85);
+        progressBar.style.width = pProgress + '%';
+    }, 120);
+    window.addEventListener('load', () => {
+        clearInterval(pTimer);
+        progressBar.style.width = '100%';
+        setTimeout(() => { progressBar.style.opacity = '0'; }, 300);
+    });
+
+    // ─── Theme Toggle ──────────────────────────────────────────────────────────
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+    function updateThemeIcon(theme) {
+        themeIcon.className = theme === 'light' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+    }
+    updateThemeIcon(document.documentElement.getAttribute('data-theme'));
+    themeToggleBtn.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        updateThemeIcon(next);
+        window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: next } }));
+    });
+
+    // ─── Toast Notification System ─────────────────────────────────────────────
+    function showToast(title, message, type = 'info', duration = 4000) {
+        const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info', warning: 'fa-circle-exclamation' };
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `app-toast ${type}`;
+        toast.innerHTML = `
+            <div class="app-toast-icon"><i class="fa-solid ${icons[type] || icons.info}"></i></div>
+            <div class="app-toast-body">
+                <div class="app-toast-title">${title}</div>
+                ${message ? `<div class="app-toast-msg">${message}</div>` : ''}
+            </div>
+            <button class="app-toast-close" onclick="this.parentElement.remove()" aria-label="Close notification">
+                <i class="fa-solid fa-times"></i>
+            </button>`;
+        container.appendChild(toast);
+        requestAnimationFrame(() => { requestAnimationFrame(() => { toast.classList.add('show'); }); });
+        setTimeout(() => {
+            toast.classList.add('hiding');
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 400);
+        }, duration);
+    }
+    window.showToast = showToast;
+
+    // ─── Notification Mark All Read ─────────────────────────────────────────────
+    function markAllRead() {
+        fetch('{% url "mark_all_notifications_read" %}', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' }
+        }).then(() => {
+            document.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'));
+            const badge = document.querySelector('.notification-badge');
+            if (badge) badge.remove();
+            showToast('Done', 'All notifications marked as read.', 'success');
         });
+    }
+    window.markAllRead = markAllRead;
+
+    // ─── CSRF Helper ────────────────────────────────────────────────────────────
+    function getCookie(name) {
+        let val = null;
+        document.cookie.split(';').forEach(c => {
+            const [k, v] = c.trim().split('=');
+            if (k === name) val = decodeURIComponent(v);
+        });
+        return val;
+    }
+    window.getCookie = getCookie;
+
+    // ─── Button Loading States ─────────────────────────────────────────────────
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function() {
+            const btn = form.querySelector('button[type="submit"]');
+            if (btn && !btn.classList.contains('no-loading')) {
+                btn.classList.add('btn-loading');
+            }
+        });
+    });
+
+    // ─── PWA Install Prompt ─────────────────────────────────────────────────────
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        const installBtn = document.getElementById('pwa-install-btn');
+        if (installBtn) installBtn.classList.remove('d-none');
+        installBtn?.addEventListener('click', async () => {
+            installBtn.classList.add('d-none');
+            deferredPrompt.prompt();
+            await deferredPrompt.userChoice;
+            deferredPrompt = null;
+        });
+    });
+
+    {% if user.is_authenticated %}
+    // ─── Real-Time WebSocket Notifications ─────────────────────────────────────
+    (function() {
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const notifSocket = new WebSocket(`${wsProtocol}//${window.location.host}/ws/notifications/`);
+        notifSocket.onmessage = function(e) {
+            try {
+                const data = JSON.parse(e.data);
+                if (data.type === 'notification' && data.message) {
+                    showToast(data.title || 'RideShare', data.message, data.toast_type || 'info');
+                    // Update badge count
+                    const badge = document.querySelector('.notification-badge');
+                    const count = parseInt((badge ? badge.textContent : '0')) + 1;
+                    if (badge) {
+                        badge.textContent = count;
+                    } else {
+                        const bellWrapper = document.querySelector('.notification-bell-wrapper');
+                        if (bellWrapper) {
+                            const newBadge = document.createElement('span');
+                            newBadge.className = 'notification-badge';
+                            newBadge.textContent = '1';
+                            bellWrapper.appendChild(newBadge);
+                        }
+                    }
+                }
+            } catch(err) { /* ignore parse errors */ }
+        };
+        notifSocket.onerror = function() { /* fail silently */ };
+    })();
+    {% endif %}
     </script>
     {% block extra_js %}{% endblock %}
 </body>

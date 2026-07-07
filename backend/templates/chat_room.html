@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold mb-0 text-truncate" style="max-width: 70%;"><i class="fa-solid fa-comments text-primary me-2"></i> {{ room_title }}</h4>
+                <a href="{% url 'chat_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Back to Chats
+                </a>
+            </div>
+
+            <!-- Chat Room Area -->
+            <div class="chat-container">
+                <div class="chat-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-circle text-success" style="font-size: 8px;"></i>
+                        <span class="small fw-semibold text-muted">Channel: {{ room_type|upper }} / Room ID: {{ room_id }}</span>
+                    </div>
+                    <div id="typing-indicator" class="small text-muted italic d-none">Someone is typing...</div>
+                </div>
+
+                <!-- Messages Feed -->
+                <div id="chat-messages" class="chat-messages">
+                    {% for msg in messages_history %}
+                    <div class="message-bubble {% if msg.sender == request.user %}message-sent{% else %}message-received{% endif %}">
+                        <small class="fw-semibold d-block text-muted mb-1" style="font-size: 11px;">
+                            {{ msg.sender.username }}
+                        </small>
+                        <p class="mb-0">{{ msg.content }}</p>
+                        
+                        {% if msg.file_attachment %}
+                        <div class="mt-2 p-2 rounded bg-dark bg-opacity-25 small">
+                            <i class="fa-solid fa-file-arrow-down me-1"></i>
+                            <a href="{{ msg.file_attachment.url }}" target="_blank" class="text-white text-decoration-underline">{{ msg.file_name|default:"Download Attachment" }}</a>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="message-meta">
+                            {{ msg.created_at|date:"H:i" }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Input area -->
+                <div class="chat-input-area">
+                    <!-- File upload form preview -->
+                    <div id="file-preview-bar" class="p-2 mb-2 bg-light rounded-3 d-none d-flex justify-content-between align-items-center">
+                        <span class="small text-muted" id="file-preview-name"><i class="fa-solid fa-paperclip me-1"></i> File ready...</span>
+                        <button type="button" class="btn-close btn-sm" onclick="cancelFileUpload()"></button>
+                    </div>
+
+                    <div class="chat-input-wrapper">
+                        <!-- Attachment button -->
+                        <button class="btn btn-outline-secondary rounded-circle" type="button" onclick="document.getElementById('chat-file-input').click()" style="width: 42px; height: 42px; padding: 0;">
+                            <i class="fa-solid fa-paperclip"></i>
+                        </button>
+                        <input type="file" id="chat-file-input" class="d-none" onchange="previewFile(this)">
+                        
+                        <!-- Text Input -->
+                        <input type="text" id="chat-message-input" class="form-control chat-input" placeholder="Type a message..." onkeyup="handleTyping(event)">
+                        
+                        <!-- Send Button -->
+                        <button class="btn btn-primary rounded-circle" id="chat-message-submit" type="button" style="width: 42px; height: 42px; padding: 0;">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- WebSocket JS scripting -->
+<script>
+    const roomType = "{{ room_type }}";
+    const roomId = "{{ room_id }}";
+    const currentUsername = "{{ request.user.username }}";
+    const currentUserId = "{{ request.user.id }}";
+    
+    // Resolve WebSocket URL scheme
+    const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+    const chatSocket = new WebSocket(
+        wsScheme + '://' + window.location.host + '/ws/chat/' + roomType + '/' + roomId + '/'
+    );
+
+    const chatFeed = document.getElementById('chat-messages');
+    
+    // Scroll to bottom on load
+    chatFeed.scrollTop = chatFeed.scrollHeight;
+
+    chatSocket.onmessage = function(e) {
+        const data = jsonParseSafe(e.data);
+        if (!data) return;
+
+        if (data.type === 'typing') {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (data.is_typing) {
+                typingIndicator.textContent = `${data.username} is typing...`;
+                typingIndicator.classList.remove('d-none');
+            } else {
+                typingIndicator.classList.add('d-none');
+            }
+            return;
+        }
+
+        if (data.type === 'message') {
+            const isMe = data.sender_id === currentUserId;
+            const bubbleClass = isMe ? 'message-sent' : 'message-received';
+            
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message-bubble ${bubbleClass}`;
+            
+            let attachmentHtml = '';
+            if (data.file_url) {
+                attachmentHtml = `
+                    <div class="mt-2 p-2 rounded bg-dark bg-opacity-25 small">
+                        <i class="fa-solid fa-file-arrow-down me-1"></i>
+                        <a href="${data.file_url}" target="_blank" class="text-white text-decoration-underline">${data.file_name}</a>
+                    </div>
+                `;
+            }
+
+            msgDiv.innerHTML = `
+                <small class="fw-semibold d-block text-muted mb-1" style="font-size: 11px;">${data.username}</small>
+                <p class="mb-0">${escapeHTML(data.content)}</p>
+                ${attachmentHtml}
+                <div class="message-meta">${data.created_at.split(' ')[1].slice(0,5)}</div>
+            `;
+            
+            chatFeed.appendChild(msgDiv);
+            chatFeed.scrollTop = chatFeed.scrollHeight;
+        }
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly.');
+    };
+
+    // Send button listeners
+    document.getElementById('chat-message-input').focus();
+    document.getElementById('chat-message-input').onkeyup = function(e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.getElementById('chat-message-submit').click();
+        }
+    };
+
+    let selectedFile = null;
+    function previewFile(input) {
+        if (input.files && input.files[0]) {
+            selectedFile = input.files[0];
+            document.getElementById('file-preview-name').innerHTML = `<i class="fa-solid fa-file-circle-check text-success me-1"></i> ${selectedFile.name}`;
+            document.getElementById('file-preview-bar').classList.remove('d-none');
+        }
+    }
+
+    function cancelFileUpload() {
+        selectedFile = null;
+        document.getElementById('chat-file-input').value = '';
+        document.getElementById('file-preview-bar').classList.add('d-none');
+    }
+
+    document.getElementById('chat-message-submit').onclick = async function(e) {
+        const messageInputDom = document.getElementById('chat-message-input');
+        const content = messageInputDom.value.trim();
+        
+        if (!content && !selectedFile) return;
+
+        let fileUrl = '';
+        let fileName = '';
+        let fileType = '';
+
+        if (selectedFile) {
+            // Upload file first via HTTP API
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            
+            try {
+                const response = await fetch('/chat/upload/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: formData
+                });
+                const data = await response.json();
+                if (data.file_url) {
+                    fileUrl = data.file_url;
+                    fileName = data.file_name;
+                    fileType = data.file_type;
+                }
+            } catch (err) {
+                console.error("File upload failed:", err);
+            }
+        }
+
+        // Send message object via WS
+        chatSocket.send(JSON.stringify({
+            'type': 'message',
+            'content': content,
+            'file_url': fileUrl,
+            'file_name': fileName,
+            'file_type': fileType
+        }));
+
+        messageInputDom.value = '';
+        cancelFileUpload();
+        sendTypingStatus(false);
+    };
+
+    // Typing Indicators broadcast
+    let isTyping = false;
+    let typingTimeout = null;
+
+    function handleTyping(e) {
+        if (e.keyCode === 13) return; // ignore Enter key
+        if (!isTyping) {
+            isTyping = true;
+            sendTypingStatus(true);
+        }
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => {
+            isTyping = false;
+            sendTypingStatus(false);
+        }, 1500);
+    }
+
+    function sendTypingStatus(status) {
+        if (chatSocket.readyState === WebSocket.OPEN) {
+            chatSocket.send(JSON.stringify({
+                'type': 'typing',
+                'is_typing': status
+            }));
+        }
+    }
+
+    // Helper functions
+    function jsonParseSafe(str) {
+        try { return JSON.parse(str); } catch (e) { return null; }
+    }
+
+    function escapeHTML(str) {
+        return str.replace(/[&<>'"]/g, 
+            tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+        );
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}

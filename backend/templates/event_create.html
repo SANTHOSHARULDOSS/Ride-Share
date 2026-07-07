@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold"><i class="fa-solid fa-calendar-plus text-primary me-2"></i> Schedule Event</h2>
+                    <p class="text-muted mb-0">Plan treks, office commutes, tours, or hackathon meetups with others.</p>
+                </div>
+                <a href="{% url 'event_list' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Back to Events
+                </a>
+            </div>
+            
+            <div class="custom-card p-4">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="id_title" class="form-label fw-semibold">Event Title</label>
+                                {{ form.title }}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="id_event_type" class="form-label fw-semibold">Event Type</label>
+                                {{ form.event_type }}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_date" class="form-label fw-semibold">Date & Time</label>
+                                {{ form.date }}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_community" class="form-label fw-semibold">Associated Trust Community</label>
+                                {{ form.community }}
+                                <div class="form-text text-muted">Optional: Tie to DTU/Office group to restrict RSVPs.</div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label for="id_location" class="form-label fw-semibold">Meetup Location</label>
+                                {{ form.location }}
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="mb-4">
+                                <label for="id_description" class="form-label fw-semibold">Event Description & Agenda</label>
+                                {{ form.description }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                        <i class="fa-solid fa-calendar-check me-2"></i> Publish Event Plan
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

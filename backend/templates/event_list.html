@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h2 class="fw-bold"><i class="fa-solid fa-route text-primary me-2"></i> Event Planner</h2>
+            <p class="text-muted mb-0">Browse and coordinate treks, tours, hackathons, or office group trips.</p>
+        </div>
+        <a href="{% url 'event_create' %}" class="btn btn-primary fw-semibold">
+            <i class="fa-solid fa-plus me-1"></i> Plan Event
+        </a>
+    </div>
+
+    <div class="row g-4">
+        {% for event in events %}
+        <div class="col-md-6">
+            <div class="custom-card p-4 h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="badge bg-primary-subtle text-primary">{{ event.get_event_type_display }}</span>
+                        {% if event.community %}
+                        <span class="small text-muted"><i class="fa-solid fa-users me-1"></i> {{ event.community.name|slice:":25" }}...</span>
+                        {% endif %}
+                    </div>
+                    <h4 class="fw-bold mb-2">{{ event.title }}</h4>
+                    <p class="text-muted small mb-3">{{ event.description|slice:":150" }}...</p>
+                    
+                    <div class="p-3 bg-light rounded-3 mb-3 small text-muted">
+                        <div class="mb-1"><i class="fa-solid fa-calendar me-2"></i> {{ event.date|date:"l, M d, Y - H:i" }}</div>
+                        <div><i class="fa-solid fa-location-dot me-2"></i> {{ event.location }}</div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                    <span class="small text-muted"><i class="fa-solid fa-user-check me-1"></i> Organized by {{ event.creator.username }}</span>
+                    <a href="{% url 'event_detail' event.id %}" class="btn btn-sm btn-primary">RSVP & Details</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="custom-card p-5 text-center text-muted">
+                <i class="fa-solid fa-route fs-1 mb-3 text-muted opacity-50"></i>
+                <h5>No Planned Events</h5>
+                <p class="mb-0">Be the first to schedule a trip, hike, or hackathon rideshare meetup!</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

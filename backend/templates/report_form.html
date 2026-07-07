@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="custom-card p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <span class="d-inline-flex align-items-center justify-content-center bg-danger-subtle text-danger rounded-circle mb-3" style="width: 70px; height: 70px;">
+                        <i class="fa-solid fa-triangle-exclamation fs-2"></i>
+                    </span>
+                    <h2 class="fw-bold">File Safety Report</h2>
+                    <p class="text-muted">Report safety violations, fraudulent accounts, or rules abuse. Checked by compliance admins.</p>
+                </div>
+                
+                <form method="POST" action="{% url 'report_submit' %}">
+                    {% csrf_token %}
+                    
+                    {% if reported_user %}
+                    <div class="mb-3 bg-light p-3 rounded-3 border-start border-danger border-3">
+                        <small class="text-muted d-block uppercase fw-bold">Reported Profile</small>
+                        <strong class="text-dark">{{ reported_user }}</strong>
+                        <input type="hidden" name="reported_username" value="{{ reported_user }}">
+                    </div>
+                    {% endif %}
+
+                    {% if ride_id %}
+                    <div class="mb-3 bg-light p-3 rounded-3">
+                        <small class="text-muted d-block uppercase fw-bold">Associated Trip ID</small>
+                        <strong>Ride #{{ ride_id }}</strong>
+                        <input type="hidden" name="ride_id" value="{{ ride_id }}">
+                    </div>
+                    {% endif %}
+
+                    {% if comm_id %}
+                    <div class="mb-3 bg-light p-3 rounded-3">
+                        <small class="text-muted d-block uppercase fw-bold">Associated Community ID</small>
+                        <strong>Community #{{ comm_id }}</strong>
+                        <input type="hidden" name="comm_id" value="{{ comm_id }}">
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-4">
+                        <label for="reason" class="form-label fw-semibold">Reason for Report</label>
+                        <textarea name="reason" id="reason" class="form-control" rows="4" placeholder="Detail the safety concern, CoC violation, or spam behavior..." required></textarea>
+                        <div class="form-text text-muted">AI safety compliance checks are active on text inputs. Harassing submissions will be flagged.</div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary w-50 py-2">Cancel</a>
+                        <button type="submit" class="btn btn-danger w-50 py-2 fw-semibold">Submit Report</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,271 @@
+{% extends 'base.html' %}
+{% block title %}Create Account — RideShare{% endblock %}
+{% block meta_description %}Join RideShare today. Create your account to start carpooling smarter, safer, and more affordably.{% endblock %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-start py-3" style="min-height: 80vh;">
+    <div class="w-100 animate-fade-up" style="max-width: 520px;">
+
+        <!-- Logo & Title -->
+        <div class="text-center mb-4">
+            <a href="{% url 'landing' %}" class="d-inline-flex align-items-center gap-2 text-decoration-none mb-3">
+                <i class="fa-solid fa-car-side text-indigo" style="font-size:1.5rem;"></i>
+                <span class="fw-bold fs-4" style="color:var(--text-page);">RideShare</span>
+            </a>
+            <h1 class="fw-bold mb-1" style="font-size:1.6rem;">Create your account</h1>
+            <p class="text-muted">Join thousands of smart commuters today</p>
+        </div>
+
+        <!-- Register Card -->
+        <div class="custom-card">
+            <form method="POST" action="{% url 'register' %}" id="register-form" novalidate>
+                {% csrf_token %}
+
+                <!-- Role Selection -->
+                <div class="mb-3">
+                    <label class="form-label">I want to join as</label>
+                    <div class="d-flex gap-2">
+                        <label class="flex-fill d-flex align-items-center gap-2 p-3 rounded-3 border cursor-pointer role-option"
+                               style="cursor:pointer;border-color:var(--input-border)!important;transition:all .2s;"
+                               for="role-passenger">
+                            <input type="radio" name="role" value="PASSENGER" id="role-passenger"
+                                   class="d-none role-radio" checked>
+                            <i class="fa-solid fa-person-walking text-indigo fa-lg"></i>
+                            <div>
+                                <div class="fw-semibold" style="font-size:.88rem;">Passenger</div>
+                                <div class="text-muted" style="font-size:.75rem;">Book rides</div>
+                            </div>
+                        </label>
+                        <label class="flex-fill d-flex align-items-center gap-2 p-3 rounded-3 border cursor-pointer role-option"
+                               style="cursor:pointer;border-color:var(--input-border)!important;transition:all .2s;"
+                               for="role-driver">
+                            <input type="radio" name="role" value="DRIVER" id="role-driver"
+                                   class="d-none role-radio">
+                            <i class="fa-solid fa-steering-wheel text-indigo fa-lg"></i>
+                            <div>
+                                <div class="fw-semibold" style="font-size:.88rem;">Driver</div>
+                                <div class="text-muted" style="font-size:.75rem;">Offer rides</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Name Row -->
+                <div class="row g-2 mb-3">
+                    <div class="col-12">
+                        <label for="reg-username" class="form-label">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa-solid fa-at"></i></span>
+                            <input type="text" id="reg-username" name="username" class="form-control"
+                                   placeholder="coolcommuter42" required minlength="3" maxlength="30"
+                                   autocomplete="username">
+                        </div>
+                        <div id="username-status" class="username-status checking d-none">
+                            <i class="fa-solid fa-spinner fa-spin me-1"></i> Checking...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Email -->
+                <div class="mb-3">
+                    <label for="reg-email" class="form-label">Email Address</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fa-solid fa-envelope"></i></span>
+                        <input type="email" id="reg-email" name="email" class="form-control"
+                               placeholder="you@example.com" required autocomplete="email">
+                    </div>
+                </div>
+
+                <!-- Phone (optional) -->
+                <div class="mb-3">
+                    <label for="reg-phone" class="form-label">
+                        Phone <span class="text-muted fw-normal">(optional)</span>
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fa-solid fa-phone"></i></span>
+                        <input type="tel" id="reg-phone" name="phone_number" class="form-control"
+                               placeholder="+91 98765 43210" autocomplete="tel">
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div class="mb-3">
+                    <label for="reg-password" class="form-label">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fa-solid fa-lock"></i></span>
+                        <input type="password" id="reg-password" name="password" class="form-control"
+                               placeholder="Min 6 characters" required minlength="6" autocomplete="new-password">
+                        <button type="button" class="input-group-text no-loading" id="toggle-pw1"
+                                aria-label="Show/hide password" style="cursor:pointer;">
+                            <i class="fa-solid fa-eye" id="pw1-icon"></i>
+                        </button>
+                    </div>
+                    <div class="password-strength-meter"><div class="password-strength-bar" id="pw-strength-bar"></div></div>
+                    <div class="strength-label" id="pw-strength-label">Enter a strong password</div>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="mb-4">
+                    <label for="reg-confirm" class="form-label">Confirm Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fa-solid fa-lock-open"></i></span>
+                        <input type="password" id="reg-confirm" name="confirm_password" class="form-control"
+                               placeholder="Repeat your password" required autocomplete="new-password">
+                        <button type="button" class="input-group-text no-loading" id="toggle-pw2"
+                                aria-label="Show/hide confirm password" style="cursor:pointer;">
+                            <i class="fa-solid fa-eye" id="pw2-icon"></i>
+                        </button>
+                    </div>
+                    <div id="pw-match-msg" class="strength-label"></div>
+                </div>
+
+                <button type="submit" class="btn btn-premium w-100 py-3 rounded-3 fw-semibold" id="register-btn">
+                    <i class="fa-solid fa-user-plus me-2"></i> Create Account
+                </button>
+
+                <div class="text-center mt-3">
+                    <span class="text-muted small">Already have an account?</span>
+                    <a href="{% url 'login' %}" class="text-indigo fw-semibold ms-1 small">Sign in</a>
+                </div>
+
+                <div class="mt-3">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div style="height:1px;flex:1;background:var(--border-color);"></div>
+                        <span class="text-muted small">or continue with</span>
+                        <div style="height:1px;flex:1;background:var(--border-color);"></div>
+                    </div>
+                    <a href="{% url 'google_login' %}" class="btn btn-secondary-custom w-100 rounded-3 py-2">
+                        <i class="fab fa-google me-2"></i> Continue with Google
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <p class="text-center text-muted mt-4" style="font-size:.75rem;">
+            By signing up, you agree to our Terms of Service and Privacy Policy.
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ─── Role Card Visual Selection ────────────────────────────────────────────
+document.querySelectorAll('.role-radio').forEach(radio => {
+    function updateStyle() {
+        document.querySelectorAll('.role-option').forEach(lbl => {
+            lbl.style.borderColor = 'var(--input-border)';
+            lbl.style.background = 'transparent';
+        });
+        const selected = document.querySelector('.role-radio:checked');
+        if (selected) {
+            const lbl = selected.closest('.role-option');
+            lbl.style.borderColor = 'var(--indigo)';
+            lbl.style.background = 'var(--indigo-light)';
+        }
+    }
+    radio.addEventListener('change', updateStyle);
+    if (radio.checked) {
+        const lbl = radio.closest('.role-option');
+        lbl.style.borderColor = 'var(--indigo)';
+        lbl.style.background = 'var(--indigo-light)';
+    }
+});
+
+// ─── Password Strength Meter ─────────────────────────────────────────────
+const pwInput = document.getElementById('reg-password');
+const pwBar   = document.getElementById('pw-strength-bar');
+const pwLabel = document.getElementById('pw-strength-label');
+const strengthTexts = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+
+function calcStrength(pw) {
+    let s = 0;
+    if (pw.length >= 6)  s++;
+    if (pw.length >= 10) s++;
+    if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) s++;
+    if (/[0-9]/.test(pw) && /[^a-zA-Z0-9]/.test(pw)) s++;
+    return s;
+}
+
+pwInput.addEventListener('input', () => {
+    const s = calcStrength(pwInput.value);
+    pwBar.className = `password-strength-bar${pwInput.value ? ' strength-' + s : ''}`;
+    pwLabel.textContent = pwInput.value ? strengthTexts[s] : 'Enter a strong password';
+    const colors = ['','#ef4444','#f97316','#eab308','#22c55e'];
+    pwLabel.style.color = pwInput.value ? colors[s] : 'var(--text-page-muted)';
+    checkMatch();
+});
+
+// ─── Password Match Indicator ─────────────────────────────────────────────
+const confirmInput = document.getElementById('reg-confirm');
+const matchMsg     = document.getElementById('pw-match-msg');
+
+function checkMatch() {
+    if (!confirmInput.value) { matchMsg.textContent = ''; return; }
+    if (pwInput.value === confirmInput.value) {
+        matchMsg.textContent = '✓ Passwords match';
+        matchMsg.style.color = '#22c55e';
+    } else {
+        matchMsg.textContent = '✗ Passwords do not match';
+        matchMsg.style.color = '#ef4444';
+    }
+}
+confirmInput.addEventListener('input', checkMatch);
+
+// ─── Username Availability (debounced AJAX) ───────────────────────────────
+const usernameInput = document.getElementById('reg-username');
+const usernameStatus = document.getElementById('username-status');
+let usernameTimer;
+
+usernameInput.addEventListener('input', () => {
+    clearTimeout(usernameTimer);
+    const val = usernameInput.value.trim();
+    if (val.length < 3) {
+        usernameStatus.className = 'username-status checking d-none';
+        return;
+    }
+    usernameStatus.className = 'username-status checking';
+    usernameStatus.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Checking...';
+
+    usernameTimer = setTimeout(() => {
+        fetch(`/api/check-username/?username=${encodeURIComponent(val)}`)
+            .then(r => r.json())
+            .then(data => {
+                usernameStatus.className = `username-status ${data.available ? 'available' : 'taken'}`;
+                usernameStatus.innerHTML = data.available
+                    ? `<i class="fa-solid fa-circle-check me-1"></i>${data.message}`
+                    : `<i class="fa-solid fa-circle-xmark me-1"></i>${data.message}`;
+            })
+            .catch(() => {
+                usernameStatus.className = 'username-status checking d-none';
+            });
+    }, 500);
+});
+
+// ─── Password Show/Hide Toggles ───────────────────────────────────────────
+function setupToggle(btnId, inputId, iconId) {
+    document.getElementById(btnId).addEventListener('click', () => {
+        const inp = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (inp.type === 'password') {
+            inp.type = 'text';
+            icon.className = 'fa-solid fa-eye-slash';
+        } else {
+            inp.type = 'password';
+            icon.className = 'fa-solid fa-eye';
+        }
+    });
+}
+setupToggle('toggle-pw1', 'reg-password', 'pw1-icon');
+setupToggle('toggle-pw2', 'reg-confirm',  'pw2-icon');
+
+// ─── Prevent submit if passwords don't match ──────────────────────────────
+document.getElementById('register-form').addEventListener('submit', (e) => {
+    if (pwInput.value !== confirmInput.value) {
+        e.preventDefault();
+        showToast('Error', 'Passwords do not match.', 'error');
+        confirmInput.focus();
+    }
+});
+</script>
+{% endblock %}

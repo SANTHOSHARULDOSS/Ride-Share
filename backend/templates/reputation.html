@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+    <h2 class="fw-bold mb-4"><i class="fa-solid fa-shield-halved text-primary me-2"></i> Trust & Reputation Hub</h2>
+    
+    <div class="row g-4">
+        <!-- Reputation stats and badges -->
+        <div class="col-md-6">
+            <div class="custom-card p-4 mb-4 reputation-card h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="fw-bold mb-3"><i class="fa-solid fa-award text-success me-2"></i> My Reputation Status</h5>
+                    
+                    <div class="text-center py-4 bg-light rounded-4 mb-4">
+                        <span class="d-block text-muted uppercase fw-bold" style="font-size: 11px;">Reputation Score</span>
+                        <h1 class="display-3 fw-bold text-success mb-0">{{ request.user.reputation_points }}</h1>
+                        <span class="badge bg-success mt-2">Trusted Level 3</span>
+                    </div>
+
+                    <h6 class="fw-bold mb-2">Unlocked Trust Badges:</h6>
+                    <div class="d-flex gap-2 flex-wrap mb-4">
+                        {% if request.user.is_email_verified %}
+                        <span class="reputation-badge-custom badge-trusted">
+                            <i class="fa-solid fa-circle-check"></i> Email Verified (+50)
+                        </span>
+                        {% endif %}
+
+                        {% if request.user.is_gov_id_verified %}
+                        <span class="reputation-badge-custom badge-trusted">
+                            <i class="fa-solid fa-id-card"></i> ID Verified (+100)
+                        </span>
+                        {% endif %}
+
+                        {% if request.user.verified_org %}
+                        <span class="reputation-badge-custom badge-verified-org">
+                            <i class="fa-solid fa-building"></i> Employed at {{ request.user.verified_org }} (+80)
+                        </span>
+                        {% endif %}
+
+                        {% if request.user.verified_college %}
+                        <span class="reputation-badge-custom badge-verified-college">
+                            <i class="fa-solid fa-graduation-cap"></i> Student at {{ request.user.verified_college }} (+80)
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="p-3 bg-light rounded-3 small text-muted">
+                    Average Driver Rating: <strong>{{ avg_rating }} / 5.0 Stars</strong> (from {{ reviews_count }} completed reviews)
+                </div>
+            </div>
+        </div>
+
+        <!-- Verification uploads forms -->
+        <div class="col-md-6">
+            <!-- 1. Government ID Verification -->
+            <div class="custom-card p-4 mb-4">
+                <h5 class="fw-bold mb-2"><i class="fa-solid fa-id-card text-primary me-2"></i> Identity Verification</h5>
+                <p class="text-muted small">Upload a scanned copy of your Government ID card (Aadhaar, PAN, Passport, DL) to earn the **ID Verified** badge and unlock +100 reputation points.</p>
+                
+                {% if request.user.is_gov_id_verified %}
+                <div class="alert alert-success d-flex align-items-center gap-2 mb-0 border-2 py-2">
+                    <i class="fa-solid fa-circle-check fs-4"></i>
+                    <strong class="small">Identity Verified. Government ID Document approved by compliance.</strong>
+                </div>
+                {% else %}
+                <form method="POST" action="{% url 'verify_id' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <input type="file" name="gov_id" class="form-control" accept=".pdf,.png,.jpg,.jpeg" required>
+                        <div class="form-text">PDF, PNG, or JPG format. Max size 5MB.</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm fw-semibold w-100">Upload Identity ID</button>
+                </form>
+                {% endif %}
+            </div>
+
+            <!-- 2. Organization Verification -->
+            <div class="custom-card p-4">
+                <h5 class="fw-bold mb-2"><i class="fa-solid fa-envelope-circle-check text-primary me-2"></i> Organization & Peer Verification</h5>
+                <p class="text-muted small">Verify your corporate or college student status by linking your official domain email address (e.g. name@microsoft.com, name@dtu.ac.in).</p>
+                
+                {% if request.user.verified_org or request.user.verified_college %}
+                <div class="alert alert-success d-flex align-items-center gap-2 border-2 py-2 mb-0">
+                    <i class="fa-solid fa-building-circle-check fs-4"></i>
+                    <strong class="small">Affiliation Verified. Affiliated Domain: {{ request.user.verified_org|default:request.user.verified_college }}</strong>
+                </div>
+                {% else %}
+                
+                {% if step_verify %}
+                <!-- Step 2: Verification Code Input -->
+                <form method="POST" action="{% url 'verify_org' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="step" value="verify">
+                    <div class="mb-3 bg-light p-2 rounded-3 text-center small text-muted">
+                        Sent code to <strong>{{ domain_email }}</strong>
+                    </div>
+                    <div class="mb-3">
+                        <label for="code" class="form-label small fw-semibold">Enter 6-Digit Domain Code</label>
+                        <input type="text" name="code" id="code" class="form-control text-center fw-bold uppercase" placeholder="e.g. A1B2C3" required>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-sm w-100 fw-semibold">Verify Code</button>
+                </form>
+                {% else %}
+                <!-- Step 1: Send Domain Email -->
+                <form method="POST" action="{% url 'verify_org' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="step" value="send">
+                    <div class="mb-3">
+                        <label for="domain_email" class="form-label small fw-semibold">Corporate / College Email</label>
+                        <input type="email" name="domain_email" id="domain_email" class="form-control" placeholder="e.g. yourname@domain.edu" required>
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary btn-sm w-100 fw-semibold">Send Domain Code</button>
+                </form>
+                {% endif %}
+                
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

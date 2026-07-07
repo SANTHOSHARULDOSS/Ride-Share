@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold"><i class="fa-solid fa-users-gear text-primary me-2"></i> Create Community</h2>
+                    <p class="text-muted mb-0">Build a trust-based travel community for your peers, students, or neighbors.</p>
+                </div>
+                <a href="{% url 'community_list' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Back to Communities
+                </a>
+            </div>
+            
+            <div class="custom-card p-4">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_name" class="form-label fw-semibold">Community Name</label>
+                                {{ form.name }}
+                                <div class="form-text text-muted">Must be unique (e.g., Delhi Tech University, office bypass, family carpool)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_category" class="form-label fw-semibold">Category Type</label>
+                                {{ form.category }}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_community_type" class="form-label fw-semibold">Privacy Settings</label>
+                                {{ form.community_type }}
+                                <div class="form-text text-muted">Private communities require moderator approval to enter.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_avatar" class="form-label fw-semibold">Avatar Icon</label>
+                                {{ form.avatar }}
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label for="id_banner" class="form-label fw-semibold">Banner Cover Photo</label>
+                                {{ form.banner }}
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label for="id_description" class="form-label fw-semibold">Description</label>
+                                {{ form.description }}
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="mb-4">
+                                <label for="id_rules" class="form-label fw-semibold">Rules & Travel Policy</label>
+                                {{ form.rules }}
+                                <div class="form-text text-muted">Define behavior codes, cost split preferences, or verification checklists.</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                        <i class="fa-solid fa-square-check me-2"></i> Launch Community Group
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

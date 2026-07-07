@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="custom-card p-4 p-md-5 text-center">
+                <div class="mb-4">
+                    <span class="d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-circle mb-3" style="width: 70px; height: 70px;">
+                        <i class="fa-solid fa-envelope-open-text fs-2"></i>
+                    </span>
+                    <h2 class="fw-bold">Verify Your Email</h2>
+                    <p class="text-muted">A verification code has been dispatched to <strong>{{ request.user.email }}</strong></p>
+                </div>
+                
+                <form method="POST" action="{% url 'verify_email_page' %}">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label for="code" class="form-label fw-semibold">Enter 8-Character Verification Code</label>
+                        <input type="text" name="code" id="code" class="form-control text-center fs-4 fw-bold tracking-widest uppercase" placeholder="e.g. A1B2C3D4" maxlength="8" required autofocus>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold mb-3">
+                        Verify Code & Unlock Profile
+                    </button>
+                </form>
+                
+                <div class="mt-3">
+                    <p class="text-muted mb-2">Didn't receive the email code?</p>
+                    <a href="{% url 'resend_verification' %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fa-solid fa-arrow-rotate-right me-1"></i> Resend Verification Email
+                    </a>
+                </div>
+                
+                <hr class="my-4">
+                
+                <p class="small text-muted">Verification bypass is available during seeds. Your seed verification code is stored in your user session.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

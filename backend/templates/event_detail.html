@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <div>
+                    <span class="badge bg-primary mb-2">{{ event.get_event_type_display }}</span>
+                    <h2 class="fw-bold mb-0">{{ event.title }}</h2>
+                </div>
+                <a href="{% url 'event_list' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Back to Events
+                </a>
+            </div>
+
+            <div class="row g-4">
+                <!-- Event description -->
+                <div class="col-md-7">
+                    <div class="custom-card p-4 mb-4">
+                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-circle-info text-primary me-2"></i> Event details & Agenda</h5>
+                        <p style="white-space: pre-line;">{{ event.description }}</p>
+                        
+                        <div class="p-3 bg-light rounded-3 mt-4 small text-muted">
+                            <div class="mb-2"><i class="fa-solid fa-calendar me-2"></i> <strong>Time:</strong> {{ event.date|date:"l, M d, Y - H:i" }}</div>
+                            <div><i class="fa-solid fa-location-dot me-2"></i> <strong>Location:</strong> {{ event.location }}</div>
+                        </div>
+                    </div>
+
+                    <!-- RSVP Actions -->
+                    <div class="custom-card p-4">
+                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-circle-check text-primary me-2"></i> Set Your RSVP</h5>
+                        <p class="text-muted small">Update your status so drivers know who is joining the commute.</p>
+                        
+                        <div class="d-flex gap-2 flex-wrap">
+                            <a href="{% url 'event_rsvp' event.id 'GOING' %}" class="btn btn-success fw-semibold {% if user_status.status == 'GOING' %}active border-2 border-dark{% endif %}">
+                                <i class="fa-solid fa-check me-1"></i> Going
+                            </a>
+                            <a href="{% url 'event_rsvp' event.id 'INTERESTED' %}" class="btn btn-info fw-semibold {% if user_status.status == 'INTERESTED' %}active border-2 border-dark{% endif %}">
+                                <i class="fa-solid fa-star me-1"></i> Interested
+                            </a>
+                            {% if user_status %}
+                            <a href="{% url 'event_rsvp' event.id 'REMOVE' %}" class="btn btn-outline-danger fw-semibold">
+                                <i class="fa-solid fa-xmark me-1"></i> Remove RSVP
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendees list -->
+                <div class="col-md-5">
+                    <div class="custom-card p-4 h-100">
+                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-user-check text-primary me-2"></i> Attendees ({{ attendees|length }})</h5>
+                        <div class="list-group list-group-flush">
+                            {% for a in attendees %}
+                            <div class="list-group-item bg-transparent px-0 py-2 d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-user-circle text-muted fs-5"></i>
+                                    <span class="small fw-semibold">{{ a.user.username }}</span>
+                                </div>
+                                <span class="badge {% if a.status == 'GOING' %}bg-success-subtle text-success{% else %}bg-info-subtle text-info{% endif %} px-2 py-1">
+                                    {{ a.get_status_display }}
+                                </span>
+                            </div>
+                            {% empty %}
+                            <p class="text-muted text-center py-4">No RSVPs yet. Be the first!</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

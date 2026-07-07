@@ -16,6 +16,13 @@ class RouteMatchingTestCase(TestCase):
             password='testpassword123',
             role='DRIVER'
         )
+        # Create passenger
+        self.passenger = User.objects.create_user(
+            username='passenger_test',
+            email='passenger@test.com',
+            password='testpassword123',
+            role='PASSENGER'
+        )
         # Create vehicle
         self.vehicle = Vehicle.objects.create(
             driver=self.driver,
@@ -77,6 +84,7 @@ class RouteMatchingTestCase(TestCase):
         # Passenger wants to go from Point A to Point B
         # Let's search with slightly offset coordinates
         matches = match_rides_for_passenger(
+            passenger=self.passenger,
             pickup_lat=12.969, pickup_lng=77.639,  # Very close to Point A
             dropoff_lat=12.931, dropoff_lng=77.621, # Very close to Point B
             seats_needed=1,
@@ -90,6 +98,7 @@ class RouteMatchingTestCase(TestCase):
     def test_incorrect_direction_no_match(self):
         # Passenger wants to travel in reverse (Point B to Point A)
         matches = match_rides_for_passenger(
+            passenger=self.passenger,
             pickup_lat=12.931, pickup_lng=77.621,
             dropoff_lat=12.969, dropoff_lng=77.639,
             seats_needed=1,
@@ -102,6 +111,7 @@ class RouteMatchingTestCase(TestCase):
     def test_too_far_no_match(self):
         # Passenger is in a completely different area
         matches = match_rides_for_passenger(
+            passenger=self.passenger,
             pickup_lat=13.500000, pickup_lng=78.500000,
             dropoff_lat=12.910000, dropoff_lng=77.600000,
             seats_needed=1,

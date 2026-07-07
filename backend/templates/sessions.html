@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold">Login Device History</h2>
+                    <p class="text-muted mb-0">Monitor and manage all active sessions and device connections to your account.</p>
+                </div>
+                <a href="{% url 'profile' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Back to Profile
+                </a>
+            </div>
+            
+            <div class="custom-card p-4">
+                <h5 class="fw-bold mb-4"><i class="fa-solid fa-desktop text-primary me-2"></i> Active Connected Devices</h5>
+                
+                <div class="list-group list-group-flush">
+                    {% for session in sessions %}
+                    <div class="list-group-item bg-transparent px-0 py-3 border-bottom d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-start gap-3">
+                            <span class="fs-2 text-muted">
+                                {% if session.device_type == 'Mobile' %}
+                                <i class="fa-solid fa-mobile-screen-button"></i>
+                                {% elif session.device_type == 'Tablet' %}
+                                <i class="fa-solid fa-tablet-screen-button"></i>
+                                {% else: %}
+                                <i class="fa-solid fa-display"></i>
+                                {% endif %}
+                            </span>
+                            <div>
+                                <h6 class="fw-bold mb-1">
+                                    {{ session.device_type }} Session
+                                    {% if session.token == current_token %}
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle ms-2">Current Session</span>
+                                    {% endif %}
+                                </h6>
+                                <p class="small text-muted mb-1">
+                                    IP: <code>{{ session.ip_address }}</code> | Browser: {{ session.user_agent|slice:":80" }}...
+                                </p>
+                                <small class="text-muted d-block">
+                                    Logged in: {{ session.created_at|date:"M d, Y - H:i" }} ({{ session.created_at|timesince }} ago)
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <form method="POST" action="{% url 'terminate_session' session.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="fa-solid fa-circle-xmark me-1"></i> Terminate
+                            </button>
+                        </form>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted text-center py-4">No active sessions tracked.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

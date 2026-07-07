@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h2 class="fw-bold"><i class="fa-solid fa-gauge-high text-primary me-2"></i> Admin Security & Auditing Panel</h2>
+            <p class="text-muted mb-0">Monitor AI models, email dispatches, CoC safety files, and run simulations.</p>
+        </div>
+        <button class="btn btn-warning fw-semibold" onclick="runEmailInboxSimulator(this)">
+            <i class="fa-solid fa-envelope-open-text me-1"></i> Run AI Support Mail Simulation
+        </button>
+    </div>
+
+    <!-- Simulation Alert Notice -->
+    <div id="sim-alert-box" class="alert alert-info d-none d-flex align-items-center gap-2 border-2 py-2 mb-4 animate__animated animate__fadeIn">
+        <div class="spinner-border spinner-border-sm text-info" role="status"></div>
+        <strong id="sim-alert-text">Running Simulated Inbox processing...</strong>
+    </div>
+
+    <!-- Tabbed Logs Grid -->
+    <div class="custom-card p-4">
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-pills nav-pills-custom mb-4 gap-2" id="logTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="ai-tab" data-bs-toggle="pill" data-bs-target="#ai-panel" type="button" role="tab"><i class="fa-solid fa-brain me-1"></i> AI Gemini Logs</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="email-tab" data-bs-toggle="pill" data-bs-target="#email-panel" type="button" role="tab"><i class="fa-solid fa-paper-plane me-1"></i> Email Logs</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="sos-tab" data-bs-toggle="pill" data-bs-target="#sos-panel" type="button" role="tab"><i class="fa-solid fa-triangle-exclamation me-1"></i> SOS Signals</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="reports-tab" data-bs-toggle="pill" data-bs-target="#reports-panel" type="button" role="tab"><i class="fa-solid fa-shield-halved me-1"></i> Safety Reports</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="logTabsContent">
+            <!-- 1. AI Logs Panel -->
+            <div class="tab-pane fade show active" id="ai-panel" role="tabpanel">
+                <div class="logs-table-wrapper">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Call Type</th>
+                                <th>Prompt Snippet</th>
+                                <th>Response Snippet</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in ai_logs %}
+                            <tr class="log-entry-row">
+                                <td class="text-nowrap">{{ log.created_at|date:"M d, H:i" }}</td>
+                                <td><span class="badge bg-secondary">{{ log.log_type }}</span></td>
+                                <td class="text-truncate" style="max-width: 250px;">{{ log.prompt }}</td>
+                                <td class="text-truncate text-muted" style="max-width: 300px;">{{ log.response }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center text-muted py-4">No AI logs recorded.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 2. Email Logs Panel -->
+            <div class="tab-pane fade" id="email-panel" role="tabpanel">
+                <div class="logs-table-wrapper">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Recipient</th>
+                                <th>Type</th>
+                                <th>Subject</th>
+                                <th>Body Context</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in email_logs %}
+                            <tr class="log-entry-row">
+                                <td class="text-nowrap">{{ log.created_at|date:"M d, H:i" }}</td>
+                                <td><code>{{ log.recipient }}</code></td>
+                                <td><span class="badge bg-info">{{ log.email_type }}</span></td>
+                                <td class="fw-bold">{{ log.subject }}</td>
+                                <td class="text-truncate text-muted" style="max-width: 300px;">{{ log.content }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center text-muted py-4">No email dispatches recorded.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 3. SOS Alarms Panel -->
+            <div class="tab-pane fade" id="sos-panel" role="tabpanel">
+                <div class="logs-table-wrapper">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Active Trip</th>
+                                <th>Triggered User</th>
+                                <th>Coordinates</th>
+                                <th>SOS Telemetry Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for alert in sos_alerts %}
+                            <tr class="table-danger log-entry-row text-danger">
+                                <td class="text-nowrap">{{ alert.created_at|date:"M d, H:i" }}</td>
+                                <td><strong>Ride #{{ alert.ride.id }}</strong></td>
+                                <td><code>{{ alert.user.username }}</code></td>
+                                <td>{{ alert.latitude|default:"0.0" }}, {{ alert.longitude|default:"0.0" }}</td>
+                                <td>
+                                    {% if alert.is_active %}
+                                    <span class="badge bg-danger pulse-glow-effect">ACTIVE BROADCAST</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Resolved</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center text-muted py-4">No emergency SOS alarms triggered.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 4. Reports Panel -->
+            <div class="tab-pane fade" id="reports-panel" role="tabpanel">
+                <div class="logs-table-wrapper">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Reporter</th>
+                                <th>Flagged User / Context</th>
+                                <th>Violation Reason</th>
+                                <th>Mod Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rep in reports %}
+                            <tr class="log-entry-row">
+                                <td class="text-nowrap">{{ rep.created_at|date:"M d, H:i" }}</td>
+                                <td><code>{{ rep.reporter.username }}</code></td>
+                                <td>
+                                    {% if rep.reported_user %}
+                                    User: <strong>{{ rep.reported_user.username }}</strong>
+                                    {% elif rep.reported_ride %}
+                                    Ride ID: <strong>{{ rep.reported_ride.id }}</strong>
+                                    {% elif rep.reported_community %}
+                                    Community ID: <strong>{{ rep.reported_community.id }}</strong>
+                                    {% else %}
+                                    General
+                                    {% endif %}
+                                </td>
+                                <td>{{ rep.reason }}</td>
+                                <td>
+                                    {% if rep.status == 'PENDING' %}
+                                    <span class="badge bg-warning text-dark">Awaiting Review</span>
+                                    {% else %}
+                                    <span class="badge bg-success">Resolved</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center text-muted py-4">No code of conduct violation files logged.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function runEmailInboxSimulator(btn) {
+        btn.disabled = true;
+        const box = document.getElementById('sim-alert-box');
+        const text = document.getElementById('sim-alert-text');
+        
+        box.classList.remove('d-none');
+        text.textContent = 'Simulating Support Inbox Poll... Running intent detection and Gemini responses...';
+
+        try {
+            const response = await fetch('/admin/logs/simulate-email/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            });
+            const data = await response.json();
+            if (data.status === 'success') {
+                text.innerHTML = `<i class="fa-solid fa-circle-check text-success"></i> <strong>Simulation Complete!</strong> ${data.message} Reloading logs...`;
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2500);
+            } else {
+                text.textContent = 'Error processing inbox mockup.';
+                btn.disabled = false;
+            }
+        } catch (err) {
+            text.textContent = 'Network error during simulation.';
+            btn.disabled = false;
+            console.error(err);
+        }
+    }
+</script>
+{% endblock %}

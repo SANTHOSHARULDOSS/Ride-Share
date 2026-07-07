@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h2 class="fw-bold"><i class="fa-solid fa-users text-primary me-2"></i> Travel Communities</h2>
+            <p class="text-muted mb-0">Join trusted communities of friends, students, and co-workers to match routes.</p>
+        </div>
+        <a href="{% url 'community_create' %}" class="btn btn-primary fw-semibold">
+            <i class="fa-solid fa-plus me-1"></i> Create Community
+        </a>
+    </div>
+
+    <!-- Search Section -->
+    <div class="custom-card p-3 mb-4">
+        <form method="GET" action="{% url 'community_list' %}" class="row g-2">
+            <div class="col-md-10">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" name="q" class="form-control" placeholder="Search by community name, college, company, or rules..." value="{{ query|default:'' }}">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100 fw-semibold">Search</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- User's Joined Communities -->
+    <h4 class="fw-bold mb-3">My Communities</h4>
+    <div class="row g-4 mb-5">
+        {% for comm in joined_communities %}
+        <div class="col-md-6 col-lg-4">
+            <div class="custom-card h-100 d-flex flex-column justify-content-between overflow-hidden">
+                <div style="height: 100px; background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%); position: relative;">
+                    {% if comm.avatar %}
+                    <img src="{{ comm.avatar.url }}" class="rounded-circle border border-white border-3 position-absolute" style="width: 60px; height: 60px; bottom: -20px; left: 20px; object-fit: cover;">
+                    {% else %}
+                    <span class="rounded-circle border border-white border-3 bg-secondary text-white position-absolute d-flex align-items-center justify-content-center fw-bold fs-4" style="width: 60px; height: 60px; bottom: -20px; left: 20px;">{{ comm.name|slice:":1" }}</span>
+                    {% endif %}
+                </div>
+                <div class="p-3 pt-4 mt-2 flex-grow-1">
+                    <h5 class="fw-bold mb-1">{{ comm.name }}</h5>
+                    <span class="badge bg-primary-subtle text-primary mb-2">{{ comm.get_category_display }}</span>
+                    <span class="badge bg-secondary-subtle text-secondary mb-2">{{ comm.get_community_type_display }}</span>
+                    <p class="text-muted small mb-0">{{ comm.description|slice:":120" }}...</p>
+                </div>
+                <div class="p-3 bg-transparent border-top d-flex justify-content-between align-items-center">
+                    <span class="small text-muted"><i class="fa-solid fa-user-group me-1"></i> Active Member</span>
+                    <a href="{% url 'community_detail' comm.id %}" class="btn btn-sm btn-primary fw-semibold">Enter Community</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="custom-card p-4 text-center text-muted">
+                <p class="mb-0">You haven't joined any communities yet. Browse communities below or create one!</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Suggested/Other Communities -->
+    <h4 class="fw-bold mb-3">Explore Communities</h4>
+    <div class="row g-4">
+        {% for comm in other_communities %}
+        <div class="col-md-6 col-lg-4">
+            <div class="custom-card h-100 d-flex flex-column justify-content-between overflow-hidden">
+                <div style="height: 100px; background: linear-gradient(135deg, #1e293b 0%, #475569 100%); position: relative;">
+                    {% if comm.avatar %}
+                    <img src="{{ comm.avatar.url }}" class="rounded-circle border border-white border-3 position-absolute" style="width: 60px; height: 60px; bottom: -20px; left: 20px; object-fit: cover;">
+                    {% else %}
+                    <span class="rounded-circle border border-white border-3 bg-secondary text-white position-absolute d-flex align-items-center justify-content-center fw-bold fs-4" style="width: 60px; height: 60px; bottom: -20px; left: 20px;">{{ comm.name|slice:":1" }}</span>
+                    {% endif %}
+                </div>
+                <div class="p-3 pt-4 mt-2 flex-grow-1">
+                    <h5 class="fw-bold mb-1">{{ comm.name }}</h5>
+                    <span class="badge bg-secondary-subtle text-secondary mb-2">{{ comm.get_category_display }}</span>
+                    <span class="badge bg-light text-dark mb-2">{{ comm.get_community_type_display }}</span>
+                    <p class="text-muted small mb-0">{{ comm.description|slice:":120" }}...</p>
+                </div>
+                <div class="p-3 bg-transparent border-top d-flex justify-content-between align-items-center">
+                    <span class="small text-muted"><i class="fa-solid fa-shield-halved me-1"></i> Trust Group</span>
+                    <a href="{% url 'community_detail' comm.id %}" class="btn btn-sm btn-outline-primary fw-semibold">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="custom-card p-4 text-center text-muted">
+                <p class="mb-0">No communities matching search query.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

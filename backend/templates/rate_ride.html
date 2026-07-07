@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="custom-card p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <span class="d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-circle mb-3" style="width: 70px; height: 70px;">
+                        <i class="fa-solid fa-star fs-2"></i>
+                    </span>
+                    <h2 class="fw-bold">Rate Your Completed Ride</h2>
+                    <p class="text-muted">Trip: <strong>{{ ride.start_location }}</strong> to <strong>{{ ride.end_location }}</strong></p>
+                </div>
+                
+                <form method="POST" action="{% url 'rate_trip' ride.id %}">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4 text-center">
+                        <label class="form-label fw-bold d-block mb-3">Rate Driver: {{ ride.driver.username }}</label>
+                        <div class="d-flex justify-content-center gap-3 fs-3">
+                            <div class="form-check form-check-inline p-0 m-0">
+                                <input type="radio" class="btn-check" name="rating" id="star1" value="1">
+                                <label class="btn btn-outline-warning rounded-circle" style="width: 45px; height: 45px; line-height: 30px;" for="star1">1</label>
+                            </div>
+                            <div class="form-check form-check-inline p-0 m-0">
+                                <input type="radio" class="btn-check" name="rating" id="star2" value="2">
+                                <label class="btn btn-outline-warning rounded-circle" style="width: 45px; height: 45px; line-height: 30px;" for="star2">2</label>
+                            </div>
+                            <div class="form-check form-check-inline p-0 m-0">
+                                <input type="radio" class="btn-check" name="rating" id="star3" value="3">
+                                <label class="btn btn-outline-warning rounded-circle" style="width: 45px; height: 45px; line-height: 30px;" for="star3">3</label>
+                            </div>
+                            <div class="form-check form-check-inline p-0 m-0">
+                                <input type="radio" class="btn-check" name="rating" id="star4" value="4">
+                                <label class="btn btn-outline-warning rounded-circle" style="width: 45px; height: 45px; line-height: 30px;" for="star4">4</label>
+                            </div>
+                            <div class="form-check form-check-inline p-0 m-0">
+                                <input type="radio" class="btn-check" name="rating" id="star5" value="5" checked>
+                                <label class="btn btn-outline-warning rounded-circle" style="width: 45px; height: 45px; line-height: 30px;" for="star5">5</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="comment" class="form-label fw-semibold">Review Comment (Optional)</label>
+                        <textarea name="comment" id="comment" class="form-control" rows="3" placeholder="Share your carpooling experience with other passengers..."></textarea>
+                        <div class="form-text">Reviews are filtered via AI toxicity checks to preserve standard CoC guidelines.</div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary w-50 py-2">Back to Dashboard</a>
+                        <button type="submit" class="btn btn-primary w-50 py-2 fw-semibold">Submit Review</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

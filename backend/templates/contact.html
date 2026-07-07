@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% block title %}Contact Us — RideShare{% endblock %}
+{% block meta_description %}Have a question or issue? Contact the RideShare support team. We'll get back to you within 24 hours.{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 760px;">
+
+    <!-- Header -->
+    <div class="text-center mb-5 animate-fade-up">
+        <div class="d-inline-flex align-items-center justify-content-center rounded-4 mb-3"
+             style="width:64px;height:64px;background:var(--indigo-light);">
+            <i class="fa-solid fa-envelope-open-text fa-xl text-indigo"></i>
+        </div>
+        <h1 class="fw-bold mb-2">Contact Support</h1>
+        <p class="text-muted">We respond within 24–48 hours. You'll receive a ticket number by email.</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Contact Form -->
+        <div class="col-lg-7">
+            <div class="custom-card card-hover animate-fade-up stagger-1">
+                <form method="POST" action="{% url 'contact' %}" id="contact-form">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label for="contact-name" class="form-label">Your Name</label>
+                            <input type="text" id="contact-name" name="name" class="form-control"
+                                   placeholder="John Doe" required
+                                   value="{% if user.is_authenticated %}{{ user.get_full_name|default:user.username }}{% endif %}">
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="contact-email" class="form-label">Email Address</label>
+                            <input type="email" id="contact-email" name="email" class="form-control"
+                                   placeholder="you@example.com" required
+                                   value="{% if user.is_authenticated %}{{ user.email }}{% endif %}">
+                        </div>
+                        <div class="col-12">
+                            <label for="contact-subject" class="form-label">Subject</label>
+                            <select id="contact-subject" name="subject" class="form-select" required>
+                                <option value="">Select a topic...</option>
+                                <option value="Account Issue">Account Issue</option>
+                                <option value="Booking Problem">Booking Problem</option>
+                                <option value="Payment Issue">Payment Issue</option>
+                                <option value="Safety Concern">Safety Concern</option>
+                                <option value="Feature Request">Feature Request</option>
+                                <option value="Bug Report">Bug Report</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label for="contact-message" class="form-label">Message</label>
+                            <textarea id="contact-message" name="message" class="form-control"
+                                      rows="5" placeholder="Describe your issue in detail..." required></textarea>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-premium w-100 py-3 rounded-3">
+                                <i class="fa-solid fa-paper-plane me-2"></i>
+                                Send Message
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Contact Info Sidebar -->
+        <div class="col-lg-5">
+            <div class="d-flex flex-column gap-3">
+                <div class="custom-card animate-fade-up stagger-2" style="background:var(--indigo-light)!important;">
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <div class="stat-icon" style="background:var(--indigo);color:#fff;">
+                            <i class="fa-solid fa-ticket"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold">Ticket System</div>
+                            <div class="text-muted small">Track your support requests</div>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-0">Every message creates a unique ticket number sent to your email. Use it to follow up.</p>
+                </div>
+
+                <div class="custom-card animate-fade-up stagger-3">
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <div class="stat-icon" style="background:rgba(34,197,94,0.15);color:#16a34a;">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold">AI Chatbot</div>
+                            <div class="text-muted small">Get instant answers</div>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-2">Our Gemini-powered AI can answer most common questions immediately.</p>
+                    <a href="{% url 'support_chatbot' %}" class="btn btn-secondary-custom rounded-pill w-100">
+                        <i class="fa-solid fa-headset me-1"></i> Open AI Chatbot
+                    </a>
+                </div>
+
+                <div class="custom-card animate-fade-up stagger-4">
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <div class="stat-icon" style="background:rgba(251,191,36,0.15);color:#d97706;">
+                            <i class="fa-solid fa-clock"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold">Response Time</div>
+                            <div class="text-muted small">24–48 business hours</div>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-0">Urgent safety issues are escalated automatically for immediate review.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

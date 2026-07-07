@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+    <h2 class="fw-bold mb-4"><i class="fa-solid fa-comments text-primary me-2"></i> Message Center</h2>
+    
+    <div class="row g-4">
+        <!-- Direct message contacts -->
+        <div class="col-md-4">
+            <div class="custom-card p-4 h-100">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-user-tag text-primary me-2"></i> Direct Messages</h5>
+                <div class="list-group list-group-flush">
+                    {% for contact in direct_contacts %}
+                    <a href="{% url 'chat_room' 'direct' contact.id %}" class="list-group-item list-group-item-action bg-transparent px-0 py-3 border-bottom d-flex align-items-center gap-3">
+                        {% if contact.profile_picture %}
+                        <img src="{{ contact.profile_picture.url }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                        {% else %}
+                        <span class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px;">{{ contact.username|slice:":1" }}</span>
+                        {% endif %}
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark">{{ contact.username }}</h6>
+                            <small class="text-muted"><i class="fa-solid fa-circle text-success me-1" style="font-size: 8px;"></i> Online</small>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <p class="text-muted text-center py-4 small">Add friends in the connections dashboard to start direct messaging!</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Community Channels -->
+        <div class="col-md-4">
+            <div class="custom-card p-4 h-100">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-users text-primary me-2"></i> Community Feeds</h5>
+                <div class="list-group list-group-flush">
+                    {% for comm in joined_communities %}
+                    <a href="{% url 'chat_room' 'community' comm.id %}" class="list-group-item list-group-item-action bg-transparent px-0 py-3 border-bottom d-flex align-items-center gap-3">
+                        {% if comm.avatar %}
+                        <img src="{{ comm.avatar.url }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                        {% else %}
+                        <span class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px;">{{ comm.name|slice:":1" }}</span>
+                        {% endif %}
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark">{{ comm.name }}</h6>
+                            <small class="text-muted">General Discussion Channel</small>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <p class="text-muted text-center py-4 small">Join a college or corporate community to open general chat channels.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Trip Group Chats -->
+        <div class="col-md-4">
+            <div class="custom-card p-4 h-100">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-car text-primary me-2"></i> Active Ride Cohorts</h5>
+                <div class="list-group list-group-flush">
+                    {% for ride in active_trips %}
+                    <a href="{% url 'chat_room' 'ride' ride.id %}" class="list-group-item list-group-item-action bg-transparent px-0 py-3 border-bottom d-flex align-items-center gap-3">
+                        <span class="d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-circle" style="width: 40px; height: 40px;">
+                            <i class="fa-solid fa-route"></i>
+                        </span>
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark">{{ ride.start_location|slice:":20" }} ➔ {{ ride.end_location|slice:":20" }}</h6>
+                            <small class="text-muted">Driver: {{ ride.driver.username }}</small>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <p class="text-muted text-center py-4 small">Join a ride-share or publish a ride to open dynamic trip coordinate chats.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

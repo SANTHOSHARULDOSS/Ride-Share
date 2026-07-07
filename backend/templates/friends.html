@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <h2 class="fw-bold mb-4"><i class="fa-solid fa-user-group text-primary me-2"></i> Connections Directory</h2>
+            
+            <div class="row g-4">
+                <!-- Friends list -->
+                <div class="col-md-7">
+                    <div class="custom-card p-4 mb-4">
+                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-address-book text-primary me-2"></i> My Connected Friends</h5>
+                        <div class="list-group list-group-flush">
+                            {% for friend in friends %}
+                            <div class="list-group-item bg-transparent px-0 py-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <div class="d-flex align-items-center gap-3">
+                                    {% if friend.profile_picture %}
+                                    <img src="{{ friend.profile_picture.url }}" class="rounded-circle" style="width: 42px; height: 42px; object-fit: cover;">
+                                    {% else %}
+                                    <span class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 42px; height: 42px;">{{ friend.username|slice:":1" }}</span>
+                                    {% endif %}
+                                    <div>
+                                        <h6 class="fw-bold mb-0">{{ friend.username }}</h6>
+                                        <span class="small text-muted"><i class="fa-solid fa-award me-1"></i> Trust Rep: {{ friend.reputation_points }} pts</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'chat_room' 'direct' friend.id %}" class="btn btn-sm btn-primary">
+                                        <i class="fa-solid fa-comments me-1"></i> Chat
+                                    </a>
+                                    <a href="{% url 'friend_remove' friend.id %}" class="btn btn-sm btn-outline-danger">
+                                        <i class="fa-solid fa-user-minus"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <p class="text-muted text-center py-4">No confirmed connections. Send requests from the suggestions panel!</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Invites and suggestions side panel -->
+                <div class="col-md-5">
+                    <!-- Received requests -->
+                    {% if pending_received %}
+                    <div class="custom-card p-4 mb-4 border-warning">
+                        <h5 class="fw-bold text-warning mb-3"><i class="fa-solid fa-user-clock me-2"></i> Received Requests ({{ pending_received|length }})</h5>
+                        <div class="list-group list-group-flush">
+                            {% for req in pending_received %}
+                            <div class="list-group-item bg-transparent px-0 py-2 d-flex justify-content-between align-items-center">
+                                <span class="fw-semibold small"><i class="fa-solid fa-user me-1 text-muted"></i> {{ req.user.username }}</span>
+                                <div class="d-flex gap-1">
+                                    <a href="{% url 'friend_accept' req.id %}" class="btn btn-xs btn-success fw-semibold">Accept</a>
+                                    <a href="{% url 'friend_reject' req.id %}" class="btn btn-xs btn-outline-danger fw-semibold">Decline</a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Peer Suggestions -->
+                    <div class="custom-card p-4">
+                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-circle-nodes text-primary me-2"></i> Peer Suggestions</h5>
+                        <div class="list-group list-group-flush">
+                            {% for sug in suggestions %}
+                            <div class="list-group-item bg-transparent px-0 py-3 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="fw-bold small d-block">{{ sug.username }}</span>
+                                    {% if sug.verified_college %}
+                                    <small class="text-muted d-block" style="font-size: 11px;"><i class="fa-solid fa-graduation-cap me-1"></i> {{ sug.verified_college }} Student</small>
+                                    {% elif sug.verified_org %}
+                                    <small class="text-muted d-block" style="font-size: 11px;"><i class="fa-solid fa-building me-1"></i> Employee at {{ sug.verified_org }}</small>
+                                    {% endif %}
+                                </div>
+                                <a href="{% url 'friend_request' sug.id %}" class="btn btn-xs btn-outline-primary fw-semibold">
+                                    <i class="fa-solid fa-user-plus me-1"></i> Connect
+                                </a>
+                            </div>
+                            {% empty %}
+                            <p class="text-muted text-center py-2" style="font-size: 13px;">No suggestions. Connect your corporate or college domain email under reputation settings to find peers!</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,63 +1,121 @@
 {% extends 'base.html' %}
-
-{% block title %}Login - Ride Share{% endblock %}
+{% block title %}Sign In — RideShare{% endblock %}
+{% block meta_description %}Sign in to your RideShare account to book or offer rides, manage your trips, and connect with your travel community.{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="custom-card p-4 p-md-5">
-                <div class="text-center mb-4">
-                    <i class="fa-solid fa-user-lock text-indigo fs-1 mb-2"></i>
-                    <h2 class="fw-bold">Sign In</h2>
-                    <p class="text-secondary small">Access your Ride Share Dashboard</p>
-                </div>
-                
-                <form method="POST">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="username" class="form-label text-secondary small fw-bold">USERNAME</label>
-                        <div class="input-group">
-                            <span class="input-group-text text-secondary"><i class="fa-solid fa-user"></i></span>
-                            <input type="text" name="username" id="username" class="form-control" placeholder="Enter username" required>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label for="password" class="form-label text-secondary small fw-bold">PASSWORD</label>
-                        <div class="input-group">
-                            <span class="input-group-text text-secondary"><i class="fa-solid fa-lock"></i></span>
-                            <input type="password" name="password" id="password" class="form-control" placeholder="Enter password" required>
-                        </div>
-                    </div>
-                    
-                    <div class="d-grid mb-4">
-                        <button type="submit" class="btn btn-premium btn-lg rounded-pill">Sign In</button>
-                    </div>
-                </form>
+<div class="container d-flex justify-content-center align-items-start py-3" style="min-height: 80vh;">
+    <div class="w-100 animate-fade-up" style="max-width: 460px;">
 
-                <div class="text-center border-top pt-4" style="border-color: var(--border-color) !important;">
-                    <h5 class="h6 mb-3">Quick Demo Logins</h5>
-                    <div class="quick-login-grid">
-                        <a href="?demo_role=ADMIN" class="quick-login-item text-decoration-none">
-                            <i class="fa-solid fa-user-tie text-warning mb-2 fs-4"></i>
-                            <div class="fw-bold small">Admin</div>
-                            <div class="text-muted" style="font-size: 10px;">admin</div>
-                        </a>
-                        <a href="?demo_role=DRIVER" class="quick-login-item text-decoration-none">
-                            <i class="fa-solid fa-id-card text-success mb-2 fs-4"></i>
-                            <div class="fw-bold small">Driver</div>
-                            <div class="text-muted" style="font-size: 10px;">driver</div>
-                        </a>
-                        <a href="?demo_role=PASSENGER" class="quick-login-item text-decoration-none">
-                            <i class="fa-solid fa-users text-info mb-2 fs-4"></i>
-                            <div class="fw-bold small">Passenger</div>
-                            <div class="text-muted" style="font-size: 10px;">passenger</div>
-                        </a>
+        <!-- Logo -->
+        <div class="text-center mb-4">
+            <a href="{% url 'landing' %}" class="d-inline-flex align-items-center gap-2 text-decoration-none mb-3">
+                <i class="fa-solid fa-car-side text-indigo" style="font-size:1.5rem;"></i>
+                <span class="fw-bold fs-4" style="color:var(--text-page);">RideShare</span>
+            </a>
+            <h1 class="fw-bold mb-1" style="font-size:1.6rem;">Welcome back</h1>
+            <p class="text-muted">Sign in to continue your journey</p>
+        </div>
+
+        <div class="custom-card">
+            <form method="POST" action="{% url 'login' %}" id="login-form">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username or Email</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
+                        <input type="text" name="username" id="username" class="form-control"
+                               placeholder="Enter username or email" required autofocus autocomplete="username">
                     </div>
                 </div>
+
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label for="password" class="form-label mb-0">Password</label>
+                        <a href="{% url 'forgot_password' %}" class="small text-indigo">Forgot password?</a>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fa-solid fa-lock"></i></span>
+                        <input type="password" name="password" id="password" class="form-control"
+                               placeholder="Enter your password" required autocomplete="current-password">
+                        <button type="button" class="input-group-text no-loading" id="toggle-pw"
+                                aria-label="Show/hide password" style="cursor:pointer;">
+                            <i class="fa-solid fa-eye" id="pw-icon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="remember_me" id="remember-me">
+                        <label class="form-check-label small" for="remember-me">Remember me for 14 days</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-premium w-100 py-3 rounded-3 fw-semibold mb-3">
+                    <i class="fa-solid fa-right-to-bracket me-2"></i> Sign In
+                </button>
+
+                <div class="d-flex align-items-center gap-2 my-3">
+                    <div style="height:1px;flex:1;background:var(--border-color);"></div>
+                    <span class="text-muted small">or</span>
+                    <div style="height:1px;flex:1;background:var(--border-color);"></div>
+                </div>
+
+                <a href="{% url 'google_login' %}" class="btn btn-secondary-custom w-100 rounded-3 py-2 mb-3">
+                    <i class="fab fa-google me-2"></i> Continue with Google
+                </a>
+
+                <div class="text-center">
+                    <span class="text-muted small">Don't have an account?</span>
+                    <a href="{% url 'register' %}" class="text-indigo fw-semibold ms-1 small">Sign up free</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Demo Quick Login -->
+        <div class="custom-card mt-3">
+            <div class="text-center mb-3">
+                <span class="small fw-bold text-muted" style="letter-spacing:.08em;text-transform:uppercase;">
+                    Demo Accounts
+                </span>
+            </div>
+            <div class="quick-login-grid">
+                <a href="?demo_role=ADMIN" class="quick-login-item text-decoration-none" aria-label="Login as Admin demo">
+                    <i class="fa-solid fa-user-tie text-warning mb-1 fs-4"></i>
+                    <div class="fw-bold small">Admin</div>
+                    <div class="text-muted" style="font-size:10px;">admin / admin123</div>
+                </a>
+                <a href="?demo_role=DRIVER" class="quick-login-item text-decoration-none" aria-label="Login as Driver demo">
+                    <i class="fa-solid fa-id-card" style="color:#22c55e;font-size:1.5rem;margin-bottom:4px;display:block;"></i>
+                    <div class="fw-bold small">Driver</div>
+                    <div class="text-muted" style="font-size:10px;">driver / driver123</div>
+                </a>
+                <a href="?demo_role=PASSENGER" class="quick-login-item text-decoration-none" aria-label="Login as Passenger demo">
+                    <i class="fa-solid fa-users" style="color:#3b82f6;font-size:1.5rem;margin-bottom:4px;display:block;"></i>
+                    <div class="fw-bold small">Passenger</div>
+                    <div class="text-muted" style="font-size:10px;">passenger / pass123</div>
+                </a>
             </div>
         </div>
+
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Password show/hide toggle
+document.getElementById('toggle-pw').addEventListener('click', function() {
+    const inp = document.getElementById('password');
+    const icon = document.getElementById('pw-icon');
+    if (inp.type === 'password') {
+        inp.type = 'text';
+        icon.className = 'fa-solid fa-eye-slash';
+    } else {
+        inp.type = 'password';
+        icon.className = 'fa-solid fa-eye';
+    }
+});
+</script>
 {% endblock %}

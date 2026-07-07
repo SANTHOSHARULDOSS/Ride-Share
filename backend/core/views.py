@@ -24,10 +24,14 @@ def landing_view(request):
         return redirect('dashboard')
     return render(request, 'landing.html')
 
+from .auth_views import record_login_session
+from .models import UserSession
+
 def login_view(request):
     """
     Standard login view with a special 'demo_role' helper
     for instant authentication of mock users during demonstrations.
+    Now logs device and IP tracking details to UserSession.
     """
     if request.user.is_authenticated:
         return redirect('dashboard')
@@ -46,7 +50,8 @@ def login_view(request):
         if username and password:
             user = authenticate(request, username=username, password=password)
             if user:
-                login(request, user)
+                login(request, user, backend='core.auth_backends.EmailOrUsernameModelBackend')
+                record_login_session(request, user)
                 messages.success(request, f"Logged in as demo {demo_role.lower()} successfully!")
                 return redirect('dashboard')
             else:
@@ -55,9 +60,12 @@ def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
+        remember_me = request.POST.get('remember_me') == 'on'
+        
         user = authenticate(request, username=username, password=password)
         if user:
-            login(request, user)
+            login(request, user, backend='core.auth_backends.EmailOrUsernameModelBackend')
+            record_login_session(request, user, remember_me=remember_me)
             messages.success(request, f"Welcome back, {user.username}!")
             return redirect('dashboard')
         else:
@@ -66,9 +74,15 @@ def login_view(request):
     return render(request, 'login.html')
 
 def logout_view(request):
+    # Mark current session inactive
+    session_key = request.session.session_key
+    if session_key:
+        UserSession.objects.filter(token=session_key).update(is_active=False)
+        
     logout(request)
     messages.success(request, "You have been logged out successfully.")
     return redirect('landing')
+
 
 # ---------------------------------------------------------------------
 # Dashboard & Role Redirection
@@ -243,6 +257,7 @@ def ride_search_view(request):
     if pickup_lat and pickup_lng and dropoff_lat and dropoff_lng:
         searched = True
         matches = match_rides_for_passenger(
+            passenger=request.user,
             pickup_lat=float(pickup_lat),
             pickup_lng=float(pickup_lng),
             dropoff_lat=float(dropoff_lat),
@@ -527,12 +542,10 @@ def offline_view(request):
 # ---------------------------------------------------------------------
 @login_required
 def project_report_view(request):
-    """
-    Renders the PROJECT_REPORT.md file dynamically on the web interface.
-    """
+    """Renders the PROJECT_REPORT.md file dynamically on the web interface."""
     import os
     from django.conf import settings
-    
+
     report_path = os.path.join(settings.BASE_DIR, '..', 'docs', '09_Project_Report', 'PROJECT_REPORT.md')
     content = ""
     if os.path.exists(report_path):
@@ -540,6 +553,50 @@ def project_report_view(request):
             content = f.read()
     else:
         content = "# Project Report\n\nReport file not found locally."
-        
+
     return render(request, 'project_report.html', {'report_content': content})
 
+
+# ---------------------------------------------------------------------
+# Phase 13 — Analytics API for Admin Dashboard Charts
+# ---------------------------------------------------------------------
+@login_required
+def admin_stats_api(request):
+    """Returns JSON data for admin dashboard Chart.js analytics charts."""
+    if request.user.role != 'ADMIN':
+        return JsonResponse({'error': 'Forbidden'}, status=403)
+
+    # Rides over last 7 days
+    from django.utils import timezone
+    import datetime
+    today = timezone.now().date()
+    labels = []
+    ride_counts = []
+    booking_counts = []
+    user_counts = []
+
+    for i in range(6, -1, -1):
+        day = today - datetime.timedelta(days=i)
+        labels.append(day.strftime('%a'))
+        ride_counts.append(Ride.objects.filter(created_at__date=day).count())
+        booking_counts.append(Booking.objects.filter(created_at__date=day).count())
+        user_counts.append(User.objects.filter(date_joined__date=day).count())
+
+    # Summary stats
+    total_revenue = Booking.objects.filter(
+        status=Booking.Status.COMPLETED
+    ).aggregate(Sum('total_price'))['total_price__sum'] or 0
+
+    return JsonResponse({
+        'labels': labels,
+        'ride_counts': ride_counts,
+        'booking_counts': booking_counts,
+        'user_counts': user_counts,
+        'summary': {
+            'total_users': User.objects.count(),
+            'total_rides': Ride.objects.count(),
+            'total_bookings': Booking.objects.count(),
+            'total_revenue': float(total_revenue),
+            'active_rides': Ride.objects.filter(status=Ride.Status.ACTIVE).count(),
+        }
+    })
