@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # --------------------------------------------------
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-fallback-key-please-change')
 DEBUG = config('DEBUG', cast=bool, default=True)
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost').split(',')
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost,.onrender.com').split(',')
 
 SITE_URL = config('SITE_URL', default='http://127.0.0.1:8000')
 

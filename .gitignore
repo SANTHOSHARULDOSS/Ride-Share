@@ -16,7 +16,8 @@ __pycache__/
 .vscode/
 
 # Project Reports containing personal credentials (keep local only)
-docs/09_Project_Report/
+docs/
+screenshots/
 backend/static/docs/
 backend/docs/
 
