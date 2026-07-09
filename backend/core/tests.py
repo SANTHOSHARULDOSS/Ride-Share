@@ -118,3 +118,27 @@ class RouteMatchingTestCase(TestCase):
             max_walk_distance_km=5.0
         )
         self.assertEqual(len(matches), 0)
+
+
+from django.urls import reverse
+from core.models import Community, SupportTicket
+
+class SafetyAndFallbackTestCase(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='passenger_test2',
+            email='passenger2@test.com',
+            password='testpassword123',
+            role='PASSENGER'
+        )
+        self.client.force_login(self.user)
+
+    def test_invalid_string_id_raises_404(self):
+        # Visiting a community detail page with invalid string ID should return 404
+        response = self.client.get(reverse('community_detail', kwargs={'comm_id': 'invalid-id'}))
+        self.assertEqual(response.status_code, 404)
+
+    def test_verify_org_email_session_expired(self):
+        # Post to verify org email without valid session should redirect to reputation
+        response = self.client.post(reverse('verify_org'), {'step': 'verify', 'code': '1234'})
+        self.assertRedirects(response, reverse('reputation'))

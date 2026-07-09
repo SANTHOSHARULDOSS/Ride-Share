@@ -8,7 +8,13 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
-from django.http import JsonResponse, HttpResponseForbidden, HttpResponseRedirect, HttpResponse
+from django.http import JsonResponse, HttpResponseForbidden, HttpResponseRedirect, HttpResponse, Http404
+
+def safe_int(val):
+    try:
+        return int(val)
+    except (ValueError, TypeError):
+        raise Http404("Invalid identifier")
 from django.views.decorators.http import require_POST, require_GET
 from django.db.models import Q, Sum, Count, Avg
 from django.core.files.storage import FileSystemStorage
@@ -18,7 +24,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import (
     User, Vehicle, Ride, RouteWaypoint, Booking, Community, CommunityMember,
     Friendship, Message, Notification, Event, EventAttendee, Report, SOSAlert,
-    Rating, EmailLog, AILog, CommunityPost, SupportTicket
+    Rating, EmailLog, AILog, UserSession, CommunityPost, SupportTicket
 )
 from .forms import CommunityForm, EventForm
 from .ai_services import plan_trip_assistant, chat_support_bot, reply_support_email, check_toxicity
@@ -80,7 +86,7 @@ def community_create_view(request):
 @login_required
 def community_detail_view(request, comm_id):
     """View details of a community, its members, rules, and events."""
-    community = get_object_or_404(Community, id=comm_id)
+    community = get_object_or_404(Community, id=safe_int(comm_id))
     
     # Check user membership
     membership = CommunityMember.objects.filter(community=community, user=request.user).first()
@@ -107,7 +113,7 @@ def community_detail_view(request, comm_id):
 @login_required
 def community_join_view(request, comm_id):
     """Join community or request access."""
-    community = get_object_or_404(Community, id=comm_id)
+    community = get_object_or_404(Community, id=safe_int(comm_id))
     membership, created = CommunityMember.objects.get_or_create(
         community=community,
         user=request.user,
@@ -130,14 +136,14 @@ def community_join_view(request, comm_id):
 @login_required
 def community_approve_member_view(request, comm_id, user_id):
     """Approve membership requests in private communities."""
-    community = get_object_or_404(Community, id=comm_id)
+    community = get_object_or_404(Community, id=safe_int(comm_id))
     
     # Authorize checking
     user_role = get_object_or_404(CommunityMember, community=community, user=request.user).role
     if user_role not in ['ADMIN', 'MODERATOR']:
         return HttpResponseForbidden("Only admins/moderators can approve requests.")
         
-    target_member = get_object_or_404(CommunityMember, community=community, user_id=user_id)
+    target_member = get_object_or_404(CommunityMember, community=community, user_id=safe_int(user_id))
     target_member.status = 'APPROVED'
     target_member.save()
 
@@ -191,7 +197,7 @@ def friends_list_view(request):
 @login_required
 def friend_request_view(request, user_id):
     """Send friend request."""
-    target_user = get_object_or_404(User, id=user_id)
+    target_user = get_object_or_404(User, id=safe_int(user_id))
     if target_user == request.user:
         messages.error(request, "You cannot add yourself.")
         return redirect('friends')
@@ -221,7 +227,7 @@ def friend_request_view(request, user_id):
 @login_required
 def friend_accept_view(request, friendship_id):
     """Accept friend request."""
-    friendship = get_object_or_404(Friendship, id=friendship_id, friend=request.user)
+    friendship = get_object_or_404(Friendship, id=safe_int(friendship_id), friend=request.user)
     friendship.status = 'ACCEPTED'
     friendship.save()
 
@@ -239,7 +245,7 @@ def friend_accept_view(request, friendship_id):
 @login_required
 def friend_reject_view(request, friendship_id):
     """Reject request."""
-    friendship = get_object_or_404(Friendship, id=friendship_id, friend=request.user)
+    friendship = get_object_or_404(Friendship, id=safe_int(friendship_id), friend=request.user)
     friendship.delete()
     messages.info(request, "Friend request declined.")
     return redirect('friends')
@@ -248,7 +254,7 @@ def friend_reject_view(request, friendship_id):
 def friend_remove_view(request, user_id):
     """Remove friend relationship."""
     Friendship.objects.filter(
-        Q(user=request.user, friend_id=user_id) | Q(user_id=user_id, friend=request.user)
+        Q(user=request.user, friend_id=safe_int(user_id)) | Q(user_id=safe_int(user_id), friend=request.user)
     ).delete()
     messages.success(request, "Friend removed successfully.")
     return redirect('friends')
@@ -286,7 +292,7 @@ def event_create_view(request):
 
 @login_required
 def event_detail_view(request, event_id):
-    event = get_object_or_404(Event, id=event_id)
+    event = get_object_or_404(Event, id=safe_int(event_id))
     attendees = EventAttendee.objects.filter(event=event).select_related('user')
     user_status = EventAttendee.objects.filter(event=event, user=request.user).first()
     
@@ -300,7 +306,7 @@ def event_detail_view(request, event_id):
 @login_required
 def event_rsvp_view(request, event_id, status_choice):
     """RSVP to events."""
-    event = get_object_or_404(Event, id=event_id)
+    event = get_object_or_404(Event, id=safe_int(event_id))
     if status_choice not in ['GOING', 'INTERESTED', 'REMOVE']:
         messages.error(request, "Invalid status choice.")
         return redirect('event_detail', event_id=event.id)
@@ -359,14 +365,14 @@ def chat_room_view(request, room_type, room_id):
     messages_history = []
     
     if room_type == 'direct':
-        recipient = get_object_or_404(User, id=room_id)
+        recipient = get_object_or_404(User, id=safe_int(room_id))
         room_title = f"Chat with {recipient.username}"
         messages_history = Message.objects.filter(
             Q(sender=request.user, recipient=recipient) | Q(sender=recipient, recipient=request.user)
         ).order_by('created_at')[:50]
         
     elif room_type == 'community':
-        community = get_object_or_404(Community, id=room_id)
+        community = get_object_or_404(Community, id=safe_int(room_id))
         # Check permissions
         is_member = CommunityMember.objects.filter(community=community, user=request.user, status='APPROVED').exists()
         if not is_member:
@@ -375,7 +381,7 @@ def chat_room_view(request, room_type, room_id):
         messages_history = Message.objects.filter(community=community).order_by('created_at')[:50]
 
     elif room_type == 'ride':
-        ride = get_object_or_404(Ride, id=room_id)
+        ride = get_object_or_404(Ride, id=safe_int(room_id))
         # Check if driver or accepted passenger
         is_allowed = (ride.driver == request.user) or Booking.objects.filter(ride=ride, passenger=request.user, status='ACCEPTED').exists()
         if not is_allowed:
@@ -592,6 +598,10 @@ def verify_org_email_view(request):
             expected_code = request.session.get(f'org_verification_code_{user.id}')
             email_address = request.session.get(f'org_verification_email_{user.id}')
             
+            if not email_address or not isinstance(email_address, str) or '@' not in email_address:
+                messages.error(request, "Verification session expired or email address is invalid.")
+                return redirect('reputation')
+                
             if expected_code and code_entered == expected_code:
                 domain = email_address.split('@')[-1]
                 org_name = domain.split('.')[0].upper()
@@ -778,7 +788,7 @@ def admin_email_reply_processor(request):
         # 2. File system report if flagged
         if ai_reply.get("needs_escalation"):
             Report.objects.create(
-                reporter=User.objects.filter(email=mail["sender"]).first() or User.objects.filter(role='ADMIN').first(),
+                reporter=User.objects.filter(email=mail["sender"]).first() or User.objects.filter(role='ADMIN').first() or request.user,
                 reason=f"[ESCALATED EMAIL TICKET] Category: {ai_reply.get('category')}\nSubject: {mail['subject']}\nBody: {mail['body']}"
             )
 
@@ -845,7 +855,7 @@ def mark_all_notifications_read_view(request):
 @login_required
 def community_leave_view(request, comm_id):
     """Allow a member to leave a community."""
-    community = get_object_or_404(Community, id=comm_id)
+    community = get_object_or_404(Community, id=safe_int(comm_id))
     membership = CommunityMember.objects.filter(community=community, user=request.user).first()
     if membership:
         # Don't allow the sole admin to leave
@@ -862,7 +872,7 @@ def community_leave_view(request, comm_id):
 @login_required
 def community_post_view(request, comm_id):
     """Create a post in a community."""
-    community = get_object_or_404(Community, id=comm_id)
+    community = get_object_or_404(Community, id=safe_int(comm_id))
     membership = CommunityMember.objects.filter(community=community, user=request.user, status='APPROVED').first()
 
     if not membership:
@@ -902,7 +912,7 @@ def community_post_view(request, comm_id):
 @login_required
 def community_post_like_view(request, comm_id, post_id):
     """Like a community post (simple counter increment)."""
-    post = get_object_or_404(CommunityPost, id=post_id, community__id=comm_id)
+    post = get_object_or_404(CommunityPost, id=post_id, community__id=safe_int(comm_id))
     post.likes_count += 1
     post.save()
     return JsonResponse({'likes': post.likes_count})

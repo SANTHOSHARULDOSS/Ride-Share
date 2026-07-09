@@ -135,106 +135,137 @@
     // Load Waypoints coordinates injected by Django
     const waypoints = {{ waypoints_json|safe }};
     
-    // Initialize Map
-    let map = L.map('map', {
-        zoomControl: true,
-        tap: !L.Browser.mobile
-    }).setView([13.0827, 80.2707], 11);
-
+    let map = null;
     let tileLayer = null;
-    function updateMapTiles(theme) {
-        if (tileLayer) {
-            map.removeLayer(tileLayer);
-        }
-        let url = theme === 'dark' 
-            ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-            : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-        let attrib = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
-        tileLayer = L.tileLayer(url, { attribution: attrib }).addTo(map);
-    }
-
-    // Set initial theme map tiles
-    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-    updateMapTiles(currentTheme);
-
-    // Listen for custom theme updates
-    window.addEventListener('themeChanged', function(e) {
-        updateMapTiles(e.detail.theme);
-    });
-
     let markers = [];
-    
-    const startIcon = L.icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-    });
+    let startIcon = null;
+    let standardIcon = null;
+    let endIcon = null;
+    let driverIcon = null;
+    let driverMarker = null;
 
-    const standardIcon = L.icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-    });
+    if (typeof L !== 'undefined') {
+        // Initialize Map
+        map = L.map('map', {
+            zoomControl: true,
+            tap: !L.Browser.mobile
+        }).setView([13.0827, 80.2707], 11);
 
-    const endIcon = L.icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-    });
+        function updateMapTiles(theme) {
+            if (tileLayer) {
+                map.removeLayer(tileLayer);
+            }
+            let url = theme === 'dark' 
+                ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+                : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+            let attrib = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+            tileLayer = L.tileLayer(url, { attribution: attrib }).addTo(map);
+        }
 
-    // Plot all waypoints
-    if (waypoints.length > 0) {
-        waypoints.forEach((wp, idx) => {
-            let icon = standardIcon;
-            if (idx === 0) icon = startIcon;
-            else if (idx === waypoints.length - 1) icon = endIcon;
+        // Set initial theme map tiles
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        updateMapTiles(currentTheme);
 
-            let marker = L.marker([wp.lat, wp.lng], {icon: icon})
-                .addTo(map)
-                .bindPopup(`<b>Stop #${wp.sequence}</b>: ${wp.name}`);
-            markers.push(marker);
+        // Listen for custom theme updates
+        window.addEventListener('themeChanged', function(e) {
+            updateMapTiles(e.detail.theme);
+        });
+        
+        startIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
         });
 
-        // Draw path polyline
-        const latlngs = waypoints.map(wp => [wp.lat, wp.lng]);
-        L.polyline(latlngs, {color: '#6366f1', weight: 4}).addTo(map);
+        standardIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
 
-        let group = new L.featureGroup(markers);
-        map.fitBounds(group.getBounds().pad(0.15));
+        endIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        // Plot all waypoints
+        if (waypoints.length > 0) {
+            waypoints.forEach((wp, idx) => {
+                let icon = standardIcon;
+                if (idx === 0) icon = startIcon;
+                else if (idx === waypoints.length - 1) icon = endIcon;
+
+                let marker = L.marker([wp.lat, wp.lng], {icon: icon})
+                    .addTo(map)
+                    .bindPopup(`<b>Stop #${wp.sequence}</b>: ${wp.name}`);
+                markers.push(marker);
+            });
+
+            // Draw path polyline
+            const latlngs = waypoints.map(wp => [wp.lat, wp.lng]);
+            L.polyline(latlngs, {color: '#6366f1', weight: 4}).addTo(map);
+
+            let group = new L.featureGroup(markers);
+            map.fitBounds(group.getBounds().pad(0.15));
+        }
+
+        // Live driver location tracking marker
+        driverIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+    } else {
+        console.warn("Leaflet failed to load. Running in offline map fallback mode.");
+        const mapDiv = document.getElementById('map');
+        if (mapDiv) {
+            mapDiv.style.background = 'linear-gradient(135deg, #1e1b4b 0%, #311042 100%)';
+            mapDiv.style.display = 'flex';
+            mapDiv.style.flexDirection = 'column';
+            mapDiv.style.alignItems = 'center';
+            mapDiv.style.justifyContent = 'center';
+            mapDiv.style.color = '#a5b4fc';
+            mapDiv.style.textAlign = 'center';
+            mapDiv.style.padding = '20px';
+            mapDiv.innerHTML = `
+                <div class="mb-3">
+                    <i class="fa-solid fa-compass mb-3 text-indigo" style="font-size: 3.5rem; color:#8b5cf6;"></i>
+                </div>
+                <h5 class="text-white mb-2">Route Tracking (Offline Fallback)</h5>
+                <p class="text-secondary small" style="max-width: 400px; margin: 0 auto;">
+                    Map service is offline or unavailable. Route stops are listed below in sequential order.
+                </p>
+            `;
+        }
     }
-
-    // Live driver location tracking marker
-    const driverIcon = L.icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-    });
-    let driverMarker = null;
 
     // Simulation Trigger
     document.getElementById('start-simulation-btn').addEventListener('click', function() {
         if (waypoints.length < 2) return;
         
         // Remove existing driver marker if any
-        if (driverMarker) map.removeLayer(driverMarker);
-        
-        // Setup initial marker position
-        driverMarker = L.marker([waypoints[0].lat, waypoints[0].lng], {icon: driverIcon})
-            .addTo(map)
-            .bindPopup("🚗 <b>Simulated Vehicle</b>")
-            .openPopup();
+        if (typeof L !== 'undefined' && map && driverIcon) {
+            if (driverMarker) map.removeLayer(driverMarker);
+            
+            // Setup initial marker position
+            driverMarker = L.marker([waypoints[0].lat, waypoints[0].lng], {icon: driverIcon})
+                .addTo(map)
+                .bindPopup("🚗 <b>Simulated Vehicle</b>")
+                .openPopup();
+        }
 
         // Show Telemetry box
         const telBox = document.getElementById('telemetry-box');
@@ -243,21 +274,38 @@
         document.getElementById('tel-status').textContent = "Running (Simulating Movement)...";
 
         // Trigger helper from app.js
-        animateDriverMovement(
-            map, 
-            driverMarker, 
-            waypoints,
-            function(lat, lng, nextTargetName) {
-                // Telemetry step update
-                document.getElementById('tel-coords').textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-                document.getElementById('tel-target').textContent = nextTargetName;
-            },
-            function() {
-                // Complete callback
-                document.getElementById('tel-status').textContent = "Arrived at Destination!";
-                alert("🎉 Ride Completed (Simulated arrival at destination)!");
-            }
-        );
+        if (typeof L !== 'undefined' && map && driverMarker) {
+            animateDriverMovement(
+                map, 
+                driverMarker, 
+                waypoints,
+                function(lat, lng, nextTargetName) {
+                    // Telemetry step update
+                    document.getElementById('tel-coords').textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+                    document.getElementById('tel-target').textContent = nextTargetName;
+                },
+                function() {
+                    // Complete callback
+                    document.getElementById('tel-status').textContent = "Arrived at Destination!";
+                    alert("🎉 Ride Completed (Simulated arrival at destination)!");
+                }
+            );
+        } else {
+            // Simulated offline movement ticks (simulation without maps!)
+            let step = 0;
+            let simInterval = setInterval(() => {
+                if (step >= waypoints.length) {
+                    clearInterval(simInterval);
+                    document.getElementById('tel-status').textContent = "Arrived at Destination!";
+                    alert("🎉 Ride Completed (Simulated offline arrival at destination)!");
+                    return;
+                }
+                const currentStop = waypoints[step];
+                document.getElementById('tel-coords').textContent = `${currentStop.lat.toFixed(4)}, ${currentStop.lng.toFixed(4)}`;
+                document.getElementById('tel-target').textContent = currentStop.name;
+                step++;
+            }, 1200);
+        }
     });
 </script>
 {% endblock %}

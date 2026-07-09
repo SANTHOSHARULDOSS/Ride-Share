@@ -122,105 +122,133 @@
         ]
     };
 
-    // Initialize Map
-    let map = L.map('map', {
-        zoomControl: true,
-        tap: !L.Browser.mobile
-    }).setView([13.0827, 80.2707], 11); // Center on Chennai
-
+    let map = null;
     let tileLayer = null;
-    function updateMapTiles(theme) {
-        if (tileLayer) {
-            map.removeLayer(tileLayer);
-        }
-        let url = theme === 'dark' 
-            ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-            : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-        let attrib = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
-        tileLayer = L.tileLayer(url, { attribution: attrib }).addTo(map);
-    }
-
-    // Set initial theme map tiles
-    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-    updateMapTiles(currentTheme);
-
-    // Listen for custom theme updates
-    window.addEventListener('themeChanged', function(e) {
-        updateMapTiles(e.detail.theme);
-    });
-
-    // Custom "Locate Me" Control
-    L.Control.Locate = L.Control.extend({
-        onAdd: function(map) {
-            let container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-            let button = L.DomUtil.create('a', 'leaflet-control-locate', container);
-            button.innerHTML = '<i class="fa-solid fa-location-crosshairs text-indigo" style="font-size: 16px;"></i>';
-            button.title = "Locate Me";
-
-            L.DomEvent.on(button, 'click', function(e) {
-                L.DomEvent.stopPropagation(e);
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(function(position) {
-                        let lat = position.coords.latitude;
-                        let lng = position.coords.longitude;
-                        reverseGeocode(lat, lng, function(address) {
-                            addWaypoint(address, lat, lng);
-                            map.flyTo([lat, lng], 14, { animate: true, duration: 1.5 });
-                        });
-                    }, function(error) {
-                        alert("Error getting location: " + error.message);
-                    });
-                } else {
-                    alert("Geolocation is not supported by your browser.");
-                }
-            });
-            return container;
-        }
-    });
-    map.addControl(new L.Control.Locate({ position: 'topleft' }));
-
     let waypoints = [];
     let markers = [];
     let routeLine = null;
 
-    // Map Click Listener
-    map.on('click', function(e) {
-        const lat = e.latlng.lat;
-        const lng = e.latlng.lng;
-        
-        reverseGeocode(lat, lng, function(addressName) {
-            addWaypoint(addressName, lat, lng);
+    if (typeof L !== 'undefined') {
+        // Initialize Map
+        map = L.map('map', {
+            zoomControl: true,
+            tap: !L.Browser.mobile
+        }).setView([13.0827, 80.2707], 11); // Center on Chennai
+
+        function updateMapTiles(theme) {
+            if (tileLayer) {
+                map.removeLayer(tileLayer);
+            }
+            let url = theme === 'dark' 
+                ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+                : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+            let attrib = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+            tileLayer = L.tileLayer(url, { attribution: attrib }).addTo(map);
+        }
+
+        // Set initial theme map tiles
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        updateMapTiles(currentTheme);
+
+        // Listen for custom theme updates
+        window.addEventListener('themeChanged', function(e) {
+            updateMapTiles(e.detail.theme);
         });
-    });
+
+        // Custom "Locate Me" Control
+        L.Control.Locate = L.Control.extend({
+            onAdd: function(map) {
+                let container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+                let button = L.DomUtil.create('a', 'leaflet-control-locate', container);
+                button.innerHTML = '<i class="fa-solid fa-location-crosshairs text-indigo" style="font-size: 16px;"></i>';
+                button.title = "Locate Me";
+
+                L.DomEvent.on(button, 'click', function(e) {
+                    L.DomEvent.stopPropagation(e);
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(function(position) {
+                            let lat = position.coords.latitude;
+                            let lng = position.coords.longitude;
+                            reverseGeocode(lat, lng, function(address) {
+                                addWaypoint(address, lat, lng);
+                                map.flyTo([lat, lng], 14, { animate: true, duration: 1.5 });
+                            });
+                        }, function(error) {
+                            alert("Error getting location: " + error.message);
+                        });
+                    } else {
+                        alert("Geolocation is not supported by your browser.");
+                    }
+                });
+                return container;
+            }
+        });
+        map.addControl(new L.Control.Locate({ position: 'topleft' }));
+
+        // Map Click Listener
+        map.on('click', function(e) {
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            
+            reverseGeocode(lat, lng, function(addressName) {
+                addWaypoint(addressName, lat, lng);
+            });
+        });
+    } else {
+        console.warn("Leaflet failed to load. Running in offline map fallback mode.");
+        const mapDiv = document.getElementById('map');
+        if (mapDiv) {
+            mapDiv.style.background = 'linear-gradient(135deg, #1e1b4b 0%, #311042 100%)';
+            mapDiv.style.display = 'flex';
+            mapDiv.style.flexDirection = 'column';
+            mapDiv.style.alignItems = 'center';
+            mapDiv.style.justifyContent = 'center';
+            mapDiv.style.color = '#a5b4fc';
+            mapDiv.style.textAlign = 'center';
+            mapDiv.style.padding = '20px';
+            mapDiv.innerHTML = `
+                <div class="mb-3">
+                    <i class="fa-solid fa-map-location-dot mb-3 text-indigo" style="font-size: 3.5rem; color:#8b5cf6;"></i>
+                </div>
+                <h5 class="text-white mb-2">Smart Map (Offline Fallback)</h5>
+                <p class="text-secondary small" style="max-width: 400px; margin: 0 auto;">
+                    Map services are offline or blocked. You can still input waypoints using the predefined city/landmark presets on the sidebar.
+                </p>
+            `;
+        }
+    }
 
     function addWaypoint(name, lat, lng) {
         waypoints.push({ name, lat, lng });
         
-        const marker = L.marker([lat, lng], { draggable: true })
-            .addTo(map)
-            .bindPopup(`<b>Stop #${waypoints.length}</b>: ${name}`)
-            .openPopup();
-            
-        // Waypoint Dragging Upgrades
-        marker.on('dragend', function(event) {
-            const position = marker.getLatLng();
-            const idx = markers.indexOf(marker);
-            if (idx !== -1) {
-                reverseGeocode(position.lat, position.lng, function(addressName) {
-                    waypoints[idx] = { name: addressName, lat: position.lat, lng: position.lng };
-                    marker.bindPopup(`<b>Stop #${idx + 1}</b>: ${addressName}`).openPopup();
-                    updateRouteUI();
-                });
-            }
-        });
-            
-        markers.push(marker);
+        if (typeof L !== 'undefined' && map) {
+            const marker = L.marker([lat, lng], { draggable: true })
+                .addTo(map)
+                .bindPopup(`<b>Stop #${waypoints.length}</b>: ${name}`)
+                .openPopup();
+                
+            // Waypoint Dragging Upgrades
+            marker.on('dragend', function(event) {
+                const position = marker.getLatLng();
+                const idx = markers.indexOf(marker);
+                if (idx !== -1) {
+                    reverseGeocode(position.lat, position.lng, function(addressName) {
+                        waypoints[idx] = { name: addressName, lat: position.lat, lng: position.lng };
+                        marker.bindPopup(`<b>Stop #${idx + 1}</b>: ${addressName}`).openPopup();
+                        updateRouteUI();
+                    });
+                }
+            });
+                
+            markers.push(marker);
+        }
         updateRouteUI();
     }
 
-
     function removeWaypoint(idx) {
-        map.removeLayer(markers[idx]);
+        if (typeof L !== 'undefined' && map && markers[idx]) {
+            map.removeLayer(markers[idx]);
+        }
         markers.splice(idx, 1);
         waypoints.splice(idx, 1);
         updateRouteUI();
@@ -232,10 +260,12 @@
         const submitBtn = document.getElementById('submit-btn');
 
         if (waypoints.length === 0) {
-            list.innerHTML = `<li class="text-muted text-center py-3 list-group-item bg-transparent">Click on the map to add trip stops (waypoints).</li>`;
+            list.innerHTML = `<li class="text-muted text-center py-3 list-group-item bg-transparent">Click on the map or use presets to add trip stops.</li>`;
             countBadge.textContent = "0 stops";
             submitBtn.disabled = true;
-            if (routeLine) map.removeLayer(routeLine);
+            if (typeof L !== 'undefined' && map && routeLine) {
+                map.removeLayer(routeLine);
+            }
             return;
         }
 
@@ -269,12 +299,14 @@
         document.getElementById('waypoints_json').value = JSON.stringify(waypoints);
 
         // Draw Polyline
-        if (routeLine) map.removeLayer(routeLine);
-        const latlngs = waypoints.map(wp => [wp.lat, wp.lng]);
-        routeLine = L.polyline(latlngs, {color: '#6366f1', weight: 4}).addTo(map);
-        
-        let group = new L.featureGroup(markers);
-        map.fitBounds(group.getBounds().pad(0.1));
+        if (typeof L !== 'undefined' && map) {
+            if (routeLine) map.removeLayer(routeLine);
+            const latlngs = waypoints.map(wp => [wp.lat, wp.lng]);
+            routeLine = L.polyline(latlngs, {color: '#6366f1', weight: 4}).addTo(map);
+            
+            let group = new L.featureGroup(markers);
+            map.fitBounds(group.getBounds().pad(0.1));
+        }
     }
 
     // Geocoder

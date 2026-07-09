@@ -9,7 +9,7 @@ from django.core.management import call_command
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 
-from .models import User, Vehicle, Ride, RouteWaypoint, Booking
+from .models import User, Vehicle, Ride, RouteWaypoint, Booking, Notification
 from .forms import UserProfileForm, VehicleForm, RidePublishForm
 from .route_matching import match_rides_for_passenger
 
@@ -109,12 +109,19 @@ def dashboard_passenger(request):
     completed_bookings = bookings.filter(status=Booking.Status.COMPLETED).count()
     total_spend = bookings.filter(status=Booking.Status.COMPLETED).aggregate(Sum('total_price'))['total_price__sum'] or 0.00
 
+    # Recommended available active rides (limit to 3)
+    available_rides = Ride.objects.filter(
+        status=Ride.Status.ACTIVE,
+        departure_time__gte=timezone.now()
+    ).exclude(driver=request.user).select_related('driver', 'vehicle').order_by('departure_time')[:3]
+
     context = {
         'bookings': bookings,
         'total_bookings': total_bookings,
         'active_bookings': active_bookings,
         'completed_bookings': completed_bookings,
         'total_spend': total_spend,
+        'available_rides': available_rides,
     }
     return render(request, 'dashboard_passenger.html', context)
 
@@ -247,7 +254,10 @@ def ride_search_view(request):
     # Get request parameters
     pickup_name = request.GET.get('pickup_name', '')
     dropoff_name = request.GET.get('dropoff_name', '')
-    seats_needed = int(request.GET.get('seats', 1))
+    try:
+        seats_needed = int(request.GET.get('seats', 1))
+    except (ValueError, TypeError):
+        seats_needed = 1
     
     pickup_lat = request.GET.get('pickup_lat')
     pickup_lng = request.GET.get('pickup_lng')
@@ -255,15 +265,22 @@ def ride_search_view(request):
     dropoff_lng = request.GET.get('dropoff_lng')
 
     if pickup_lat and pickup_lng and dropoff_lat and dropoff_lng:
-        searched = True
-        matches = match_rides_for_passenger(
-            passenger=request.user,
-            pickup_lat=float(pickup_lat),
-            pickup_lng=float(pickup_lng),
-            dropoff_lat=float(dropoff_lat),
-            dropoff_lng=float(dropoff_lng),
-            seats_needed=seats_needed
-        )
+        try:
+            pickup_lat_f = float(pickup_lat)
+            pickup_lng_f = float(pickup_lng)
+            dropoff_lat_f = float(dropoff_lat)
+            dropoff_lng_f = float(dropoff_lng)
+            searched = True
+            matches = match_rides_for_passenger(
+                passenger=request.user,
+                pickup_lat=pickup_lat_f,
+                pickup_lng=pickup_lng_f,
+                dropoff_lat=dropoff_lat_f,
+                dropoff_lng=dropoff_lng_f,
+                seats_needed=seats_needed
+            )
+        except (ValueError, TypeError):
+            messages.error(request, "Invalid coordinates format provided.")
 
     # Fetch active rides for smart client-side waypoint matching
     active_rides = Ride.objects.filter(
@@ -271,12 +288,15 @@ def ride_search_view(request):
         departure_time__gte=timezone.now()
     ).select_related('driver', 'vehicle').prefetch_related('waypoints')
 
+    # Fetch active rides for direct listing when not searched
+    available_rides = active_rides.exclude(driver=request.user).order_by('departure_time')
+
     active_rides_list = []
     for ride in active_rides:
         active_rides_list.append({
             'id': ride.id,
             'driver': ride.driver.username,
-            'vehicle': f"{ride.vehicle.make} {ride.vehicle.model} ({ride.vehicle.license_plate})",
+            'vehicle': f"{ride.vehicle.make} {ride.vehicle.model} ({ride.vehicle.license_plate})" if ride.vehicle else "None",
             'price_per_seat': float(ride.price_per_seat),
             'available_seats': ride.available_seats,
             'departure_time': ride.departure_time.isoformat() if ride.departure_time else "",
@@ -298,6 +318,7 @@ def ride_search_view(request):
         'dropoff_lng': dropoff_lng,
         'matches': matches,
         'searched': searched,
+        'available_rides': available_rides,
         'active_rides_json': json.dumps(active_rides_list),
     }
     return render(request, 'ride_search.html', context)
@@ -399,13 +420,47 @@ def booking_create_view(request, ride_id):
     ride = get_object_or_404(Ride, pk=ride_id)
     
     if request.method == 'POST':
-        seats_requested = int(request.POST.get('seats_requested', 1))
-        pickup_location = request.POST.get('pickup_name', ride.start_location)
-        pickup_lat = float(request.POST.get('pickup_lat', 0.0))
-        pickup_lng = float(request.POST.get('pickup_lng', 0.0))
-        dropoff_location = request.POST.get('dropoff_name', ride.end_location)
-        dropoff_lat = float(request.POST.get('dropoff_lat', 0.0))
-        dropoff_lng = float(request.POST.get('dropoff_lng', 0.0))
+        try:
+            seats_requested = int(request.POST.get('seats_requested', 1))
+        except (ValueError, TypeError):
+            seats_requested = 1
+            
+        pickup_location = request.POST.get('pickup_name') or ride.start_location
+        dropoff_location = request.POST.get('dropoff_name') or ride.end_location
+        
+        try:
+            pickup_lat = float(request.POST.get('pickup_lat') or 0.0)
+        except (ValueError, TypeError):
+            pickup_lat = 0.0
+            
+        try:
+            pickup_lng = float(request.POST.get('pickup_lng') or 0.0)
+        except (ValueError, TypeError):
+            pickup_lng = 0.0
+            
+        try:
+            dropoff_lat = float(request.POST.get('dropoff_lat') or 0.0)
+        except (ValueError, TypeError):
+            dropoff_lat = 0.0
+            
+        try:
+            dropoff_lng = float(request.POST.get('dropoff_lng') or 0.0)
+        except (ValueError, TypeError):
+            dropoff_lng = 0.0
+
+        # Fallback to route waypoints if coordinates are missing/zero
+        waypoints = list(ride.waypoints.all().order_by('sequence_order'))
+        if pickup_lat == 0.0 and pickup_lng == 0.0 and waypoints:
+            pickup_lat = float(waypoints[0].latitude)
+            pickup_lng = float(waypoints[0].longitude)
+            if not pickup_location or pickup_location == ride.start_location:
+                pickup_location = waypoints[0].name
+                
+        if dropoff_lat == 0.0 and dropoff_lng == 0.0 and waypoints:
+            dropoff_lat = float(waypoints[-1].latitude)
+            dropoff_lng = float(waypoints[-1].longitude)
+            if not dropoff_location or dropoff_location == ride.end_location:
+                dropoff_location = waypoints[-1].name
         
         if seats_requested > ride.available_seats:
             messages.error(request, "Not enough seats available.")
@@ -447,12 +502,28 @@ def booking_action_view(request, booking_id):
             booking.ride.available_seats -= booking.seats_requested
             booking.ride.save()
             booking.save()
+            # Notify passenger
+            Notification.objects.create(
+                recipient=booking.passenger,
+                sender=request.user,
+                notification_type='TRIP_ACCEPTED',
+                content=f"🎉 Your booking request for Ride #{booking.ride.id} was accepted by {request.user.username}!",
+                link='/dashboard/'
+            )
             messages.success(request, f"Booking for {booking.passenger.username} accepted!")
         else:
             messages.error(request, "Not enough available seats left on this ride.")
     elif action == 'reject':
         booking.status = Booking.Status.REJECTED
         booking.save()
+        # Notify passenger
+        Notification.objects.create(
+            recipient=booking.passenger,
+            sender=request.user,
+            notification_type='GENERAL',
+            content=f"❌ Your booking request for Ride #{booking.ride.id} was rejected by {request.user.username}.",
+            link='/dashboard/'
+        )
         messages.warning(request, f"Booking for {booking.passenger.username} rejected.")
 
     return redirect('dashboard')
@@ -502,6 +573,13 @@ def payment_simulate_view(request, booking_id):
         
         if payment_status == 'SUCCESS':
             # Payment completed successfully. Wait for driver approval or update status
+            Notification.objects.create(
+                recipient=booking.ride.driver,
+                sender=booking.passenger,
+                notification_type='TRIP_REQUEST',
+                content=f"📩 New booking request from {booking.passenger.username} for Ride #{booking.ride.id} ({booking.seats_requested} seats)",
+                link='/dashboard/'
+            )
             messages.success(request, "Payment successful! Your booking is pending driver approval.")
             return redirect('dashboard')
         elif payment_status == 'PENDING':
@@ -600,3 +678,13 @@ def admin_stats_api(request):
             'active_rides': Ride.objects.filter(status=Ride.Status.ACTIVE).count(),
         }
     })
+
+
+# ---------------------------------------------------------------------
+# Custom Error Handlers
+# ---------------------------------------------------------------------
+def handler404(request, exception=None):
+    return render(request, '404.html', status=404)
+
+def handler500(request):
+    return render(request, '500.html', status=500)
